@@ -135,9 +135,7 @@ class TrajectoryPlotter:
         simfig.tight_layout()
 
         if show:
-            simfig.canvas.draw()
-            plt.draw()
-            plt.pause(5)
+            simfig.show()
 
         self.fig   = simfig
         self.plots = plots
@@ -284,7 +282,9 @@ class Animator:
             line  = self.showax.plot( x_pts, y_pts, self.linestyle)
             self.showlines.append( line )
 
+        plt.draw()
         plt.show()
+        
     
     ###########################################################################
     def show3(self, q ):
@@ -443,12 +443,10 @@ class Animator:
                                                 n_frame , interval = inter, 
                                                 init_func=self.__ani_init__ )
         if save:
-            self.ani.save( file_name + '.gif', writer='imagemagick', fps=30)
+            self.ani.save( file_name + '.html' ) # , writer = 'mencoder' )
 
-        # self.ani_fig.show()
-        plt.ioff()
-        plt.show(block=True)
-
+        self.ani_fig.show()
+        
     #####################################    
     def __ani_init__(self):
         for line in self.lines:

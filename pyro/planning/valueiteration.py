@@ -6,12 +6,14 @@ Created on Wed Jul 12 12:09:37 2017
 """
 
 import sys
+import os
 
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import RectBivariateSpline as interpol2D
 from scipy.interpolate import RegularGridInterpolator as rgi
-from scipy.interpolate import Rbf as Rbf
+
+from mpl_toolkits.mplot3d import Axes3D
 
 from pyro.control import controller
 
@@ -345,281 +347,6 @@ class ValueIteration_2D:
 '''
 ################################################################################
 '''
-#
-#
-# class ValueIteration_3D( ValueIteration_2D ):
-#     """ Dynamic programming for 3D continous dynamic system, 2 continuous input u """
-#
-#     ############################
-#     def __init__(self, grid_sys , cost_function ):
-#
-#         # Dynamic system
-#         self.grid_sys = grid_sys        # Discretized Dynamic system class
-#         self.sys      = grid_sys.sys     # Base Dynamic system class
-#
-#         # Controller
-#         self.ctl = ViController( self.sys.n , self.sys.m , self.sys.n)
-#
-#         # Cost function
-#         self.cf  = cost_function
-#
-#         # Options
-#         self.uselookuptable = False
-#
-#
-#     ##############################
-#     def initialize(self):
-#         """ initialize cost-to-go and policy """
-#
-#         self.J             = np.zeros( self.grid_sys.xgriddim , dtype = float )
-#         self.J_1D          = np.zeros( self.grid_sys.nodes_n  , dtype = float )
-#         self.action_policy = np.zeros( self.grid_sys.xgriddim , dtype = int   )
-#
-#         self.Jnew          = self.J.copy()
-#         self.J_1D_new      = self.J_1D.copy()
-#         self.Jplot         = self.J.copy()
-#
-#         # Initial evaluation
-#
-#         # For all state nodes
-#         for node in range( self.grid_sys.nodes_n ):
-#
-#                 x = self.grid_sys.nodes_state[ node , : ]
-#
-#                 i = self.grid_sys.nodes_index[ node , 0 ]
-#                 j = self.grid_sys.nodes_index[ node , 1 ]
-#                 k = self.grid_sys.nodes_index[ node , 2 ]
-#
-#                 # Final Cost
-#                 j               = self.cf.h( x )
-#                 self.J[i,j,k]   = j
-#                 self.J_1D[node] = j
-#
-#
-#     ###############################
-#     def compute_step(self):
-#         """ One step of value iteration """
-#
-#         # Get interpolation of current cost space
-#         #J_interpol = interpol2D( self.grid_sys.xd[0] , self.grid_sys.xd[1] , self.J , bbox=[None, None, None, None], kx=1, ky=1,)
-#
-#         cartcoord   = self.grid_sys.nodes_state
-#         values      = self.J_1D
-#         J_interpol  = LinearNDInterpolator(cartcoord, values, fill_value=0)
-#
-#
-#         # For all state nodes
-#         for node in range( self.grid_sys.nodes_n ):
-#
-#                 x = self.grid_sys.nodes_state[ node , : ]
-#
-#                 i = self.grid_sys.nodes_index[ node , 0 ]
-#                 j = self.grid_sys.nodes_index[ node , 1 ]
-#                 k = self.grid_sys.nodes_index[ node , 2 ]
-#
-#                 # One steps costs - Q values
-#                 Q = np.zeros( self.grid_sys.actions_n  )
-#
-#                 # For all control actions
-#                 for action in range( self.grid_sys.actions_n ):
-#
-#                     u = self.grid_sys.actions_input[ action , : ]
-#
-#                     # Compute next state and validity of the action
-#                     x_next        = self.sys.f( x , u ) * self.grid_sys.dt + x
-#                     x_ok          = self.sys.isavalidstate(x_next)
-#                     u_ok          = self.sys.isavalidinput(x,u)
-#                     action_isok   = ( u_ok & x_ok )
-#
-#                     # If the current option is allowable
-#                     if action_isok:
-#
-#                         J_next = J_interpol( x_next )
-#
-#                         # Cost-to-go of a given action
-#                         y = self.sys.h(x, u, 0)
-#                         Q[action] = self.cf.g(x, u, y) + J_next
-#
-#                     else:
-#                         # Not allowable states or inputs/states combinations
-#                         Q[action] = self.cf.INF
-#
-#
-#                 self.Jnew[i,j,k]          = Q.min()
-#                 self.J_1D_new[node]       = self.Jnew[i,j,k]
-#                 self.action_policy[i,j,k] = Q.argmin()
-#
-#                 # Impossible situation ( unaceptable situation for any control actions )
-#                 if self.Jnew[i,j,k] > (self.cf.INF-1) :
-#                     self.action_policy[i,j,k]     = -1
-#
-#
-#         # Convergence check
-#         delta = self.J - self.Jnew
-#         j_max     = self.Jnew.max()
-#         delta_max = delta.max()
-#         delta_min = delta.min()
-#         print('Max:',j_max,'Delta max:',delta_max, 'Delta min:',delta_min)
-#
-#         self.J    = self.Jnew.copy()
-#         self.J_1D = self.J_1D_new.copy()
-#
-#
-#     ################################
-#     def assign_interpol_controller(self):
-#         """ controller from optimal actions """
-#
-#         # Compute grid of u
-#         self.u_policy_grid    = []
-#         self.u_policy_1D      = []
-#
-#         # for all inputs
-#         for k in range(self.sys.m):
-#             self.u_policy_grid.append( np.zeros( self.grid_sys.xgriddim , dtype = float ) )
-#             self.u_policy_1D.append( np.zeros( self.grid_sys.nodes_n , dtype = float ) )
-#
-#         # For all state nodes
-#         for node in range( self.grid_sys.nodes_n ):
-#
-#             i = self.grid_sys.nodes_index[ node , 0 ]
-#             j = self.grid_sys.nodes_index[ node , 1 ]
-#             k = self.grid_sys.nodes_index[ node , 2 ]
-#
-#             # If no action is good
-#             if ( self.action_policy[i,j,k] == -1 ):
-#
-#                 # for all inputs
-#                 for k in range(self.sys.m):
-#                     self.u_policy_grid[k][i,j,k] = 0
-#                     self.u_policy_1D[k][node]    = 0
-#
-#             else:
-#                 # for all inputs
-#                 for k in range(self.sys.m):
-#                     self.u_policy_grid[k][i,j,k] = self.grid_sys.actions_input[ self.action_policy[i,j,k] , k ]
-#                     self.u_policy_1D[k][node]    = self.grid_sys.actions_input[ self.action_policy[i,j,k] , k ]
-#
-#
-#         # Compute Interpol function
-#         self.x2u_interpol_functions = []
-#
-#         cartcoord = self.grid_sys.nodes_state
-#
-#         # for all inputs
-#         for k in range(self.sys.m):
-#             values  = self.u_policy_1D[k]
-#             self.x2u_interpol_functions.append(
-#                     LinearNDInterpolator(cartcoord, values, fill_value=0)
-#                     )
-#
-#         # Asign Controller
-#         self.ctl.vi_law = self.vi_law
-#
-#
-#     ################################
-#     def vi_law(self, x , t = 0 ):
-#         """ controller from optimal actions """
-#
-#         u = np.zeros( self.sys.m )
-#
-#         # for all inputs
-#         for k in range(self.sys.m):
-#             u[k] = self.x2u_interpol_functions[k]( x )
-#
-#         return u
-#
-#
-#
-#     ################################
-#     def plot_cost2go(self, k = 0 ):
-#         """ print graphic """
-#
-#         xname = self.sys.state_label[0] + ' ' + self.sys.state_units[0]
-#         yname = self.sys.state_label[1] + ' ' + self.sys.state_units[1]
-#
-#         self.Jplot = self.J[:,:,k].copy()
-#
-#         ###################
-#
-#         fs = 10
-#
-#         self.fig1 = plt.figure(figsize=(4, 4),dpi=300, frameon=True)
-#         self.fig1.canvas.set_window_title('Cost-to-go')
-#         self.ax1  = self.fig1.add_subplot(1,1,1)
-#
-#         plt.ylabel(yname, fontsize = fs)
-#         plt.xlabel(xname, fontsize = fs)
-#         self.im1 = plt.pcolormesh( self.grid_sys.xd[0] ,
-#                                    self.grid_sys.xd[1] ,
-#                                    self.Jplot.T,
-#                                    shading='gouraud')
-#         plt.axis([self.sys.x_lb[0] ,
-#                   self.sys.x_ub[0],
-#                   self.sys.x_lb[1] ,
-#                   self.sys.x_ub[1]])
-#         plt.colorbar()
-#         plt.grid(True)
-#         plt.tight_layout()
-#
-#
-#     ################################
-#     def plot_policy_ij(self, k = 0  , ui = 0 ):
-#         """ print graphic """
-#
-#         xname = self.sys.state_label[0] + ' ' + self.sys.state_units[0]
-#         yname = self.sys.state_label[1] + ' ' + self.sys.state_units[1]
-#
-#         policy_plot = self.u_policy_grid[ui][:,:,k].copy()
-#
-#         ###################
-#
-#         fs = 10
-#
-#         self.fig1 = plt.figure(figsize=(4, 4),dpi=300, frameon=True)
-#         self.fig1.canvas.set_window_title('Policy for u[%i]'%ui)
-#         self.ax1  = self.fig1.add_subplot(1,1,1)
-#
-#         plt.ylabel(yname, fontsize = fs)
-#         plt.xlabel(xname, fontsize = fs)
-#         self.im1 = plt.pcolormesh( self.grid_sys.xd[0] , self.grid_sys.xd[1] , policy_plot.T )
-#         plt.axis([self.sys.x_lb[0] , self.sys.x_ub[0], self.sys.x_lb[1] , self.sys.x_ub[1]])
-#         plt.colorbar()
-#         plt.grid(True)
-#         plt.tight_layout()
-#
-#
-#     ################################
-#     def load_data(self, name = 'DP_data'):
-#         """ Save optimal controller policy and cost to go """
-#
-#         try:
-#
-#             self.J              = np.load( name + '_J'  + '.npy' )
-#             self.action_policy  = np.load( name + '_a'  + '.npy' ).astype(int)
-#
-#             self.J_1D          = np.zeros( self.grid_sys.nodes_n  , dtype = float )
-#
-#             self.Jnew          = self.J.copy()
-#             self.J_1D_new      = self.J_1D.copy()
-#             self.Jplot         = self.J.copy()
-#
-#             # Create 1D J
-#             for node in range( self.grid_sys.nodes_n ):
-#
-#                     x = self.grid_sys.nodes_state[ node , : ]
-#
-#                     i = self.grid_sys.nodes_index[ node , 0 ]
-#                     j = self.grid_sys.nodes_index[ node , 1 ]
-#                     k = self.grid_sys.nodes_index[ node , 2 ]
-#
-#                     self.J_1D[node] = self.J[i,j,k]
-#
-#         except:
-#
-#             print('Failed to load DP data ' )
-#
-
-
 
 class ValueIteration_ND:
     """ Dynamic programming for 2D continous dynamic system, one continuous input u """
@@ -662,12 +389,8 @@ class ValueIteration_ND:
         for node in range(self.grid_sys.nodes_n):
             x = self.grid_sys.nodes_state[node, :]
 
-            # print('x', x)
-            # print('node index', self.grid_sys.nodes_index[node, :])
-
             # use tuple to get dynamic list of indices
             indices = tuple(self.grid_sys.nodes_index[node, i] for i in range(self.n_dim))
-            # print(indices)
 
             # Final cost
             self.J[indices] = self.cf.h(x)
@@ -683,13 +406,8 @@ class ValueIteration_ND:
             J_interpol = interpol2D(self.grid_sys.xd[0], self.grid_sys.xd[1],
                                     self.J, bbox=[None, None, None, None], kx=1, ky=1)
         elif self.n_dim == 3:
-
-            # print('J shape on compute : ', self.J.shape)
-
             # call function for random shape
-            print('get interpolation for 3 dims')
             J_interpol = rgi([self.grid_sys.xd[0], self.grid_sys.xd[1], self.grid_sys.xd[2]], self.J)
-            # print('J_interpol', J_interpol)
         else:
             points = tuple(self.grid_sys.xd[i] for i in range(self.n_dim))
             J_interpol = rgi(points, self.J)
@@ -719,18 +437,19 @@ class ValueIteration_ND:
 
                 else:
 
-                    x_next = self.sys.f(x, u) * self.dt + x
+                    x_next = self.sys.f(x, u) * self.grid_sys.dt + x
                     x_ok = self.sys.isavalidstate(x_next)
                     u_ok = self.sys.isavalidinput(x, u)
                     action_isok = (u_ok & x_ok)
 
                 # If the current option is allowable
                 if action_isok:
-                    # print('J_interpol', J_interpol)
                     if self.n_dim == 2:
                         J_next = J_interpol(x_next[0], x_next[1])
-                    else:
+                    elif self.n_dim == 3:
                         J_next = J_interpol([x_next[0], x_next[1], x_next[2]])
+                    else:
+                        J_next = J_interpol([x_next[0], x_next[1], x_next[2], x_next[3]])
 
                     # Cost-to-go of a given action
                     y = self.sys.h(x, u, 0)
@@ -744,7 +463,6 @@ class ValueIteration_ND:
                     Q[action] = self.cf.INF
 
             self.Jnew[indices] = Q.min()
-            # print('Indices Test', self.Jnew[i, j], self.Jnew[indices], [i, j], indices)
             self.action_policy[indices] = Q.argmin()
 
             # Impossible situation ( unaceptable situation for any control actions )
@@ -823,7 +541,14 @@ class ValueIteration_ND:
 
         u = np.zeros(self.sys.m)
 
-        print('x', x)
+        # handle OOB inputs by inputting closest value 
+        # OR setting it to 0
+        # try and figure out what works best for actual physical pathfinding
+        for i in range(self.sys.n):
+            if x[i] < self.sys.x_lb[i]:
+                x[i] = self.sys.x_lb[i]
+            if x[i] > self.sys.x_ub[i]:
+                x[i] = self.sys.x_ub[i]
 
         # for all inputs
         for k in range(self.sys.m):
@@ -835,62 +560,93 @@ class ValueIteration_ND:
         return u
 
     ################################
-    def compute_steps(self, l=50, plot=False, threshold=1.0e-25):
+    def compute_steps(self, l=50, plot=False, threshold=1.0e-25, maxJ=1000):
         """ compute number of step """
         step = 0
         print('Step:', step)
         cur_threshold = self.compute_step()
         print('Current threshold', cur_threshold)
+        if plot:
+            self.plot_dynamic_cost2go(maxJ)
         # while abs(cur_threshold) > threshold:
         while step < l:
             step = step + 1
             print('Step:', step)
             cur_threshold = self.compute_step()
             print('Current threshold', cur_threshold)
+            if plot:
+                self.draw_cost2go(maxJ)
 
     ################################
-    def plot_cost2go(self, maxJ=1000):
+    def plot_dynamic_cost2go(self, maxJ=1000):
         """ print graphic """
+
+        plt.ion()
 
         xname = self.sys.state_label[0] + ' ' + self.sys.state_units[0]
         yname = self.sys.state_label[1] + ' ' + self.sys.state_units[1]
 
-        self.Jplot = self.J.copy()
-
-        ## Saturation function for cost
-        for i in range(self.grid_sys.xgriddim[0]):
-            for j in range(self.grid_sys.xgriddim[1]):
-                if self.J[i, j] >= maxJ:
-                    self.Jplot[i, j] = maxJ
-                else:
-                    self.Jplot[i, j] = self.J[i, j]
-
-        self.fig1 = plt.figure(figsize=(4, 4), dpi=300, frameon=True)
-        self.fig1.canvas.set_window_title('Cost-to-go')
-        self.ax1 = self.fig1.add_subplot(1, 1, 1)
+        self.fig_dynamic = plt.figure(figsize=(4, 4), dpi=300, frameon=True)
+        self.fig_dynamic.canvas.set_window_title('Dynamic Cost-to-go')
+        self.ax1_dynamic = self.fig_dynamic.add_subplot(1, 1, 1)
 
         plt.ylabel(yname, fontsize=self.fontsize)
         plt.xlabel(xname, fontsize=self.fontsize)
-        self.im1 = plt.pcolormesh(self.grid_sys.xd[0],
-                                  self.grid_sys.xd[1],
-                                  self.Jplot.T,
-                                  shading='gouraud')
 
         plt.axis([self.sys.x_lb[0],
                   self.sys.x_ub[0],
                   self.sys.x_lb[1],
                   self.sys.x_ub[1]])
 
+        self.Jplot = self.J.copy()
+        self.create_Jplot(maxJ)
+        plot = self.Jplot.T if self.n_dim == 2 else self.Jplot[..., 0].T
+        self.im1_dynamic = plt.pcolormesh(self.grid_sys.xd[0],
+                                  self.grid_sys.xd[1],
+                                  plot,
+                                  shading='gouraud')
+
         plt.colorbar()
         plt.grid(True)
         plt.tight_layout()
 
         plt.draw()
-        plt.show()
+        plt.pause(0.1)
+
+    #############################
+    def draw_cost2go(self, maxJ=1000):
+        self.Jplot = self.J.copy()
+        self.create_Jplot(maxJ)
+        plot = self.Jplot.T if self.n_dim == 2 else self.Jplot.T[0]
+        self.im1_dynamic.set_array(np.ravel(plot))
+        plt.draw()
+        plt.pause(0.1)
+
+    ################################
+    def create_Jplot(self, maxJ=1000):
+        ## Saturation function for cost
+        if self.n_dim == 2:
+            for i in range(self.grid_sys.xgriddim[0]):
+                for j in range(self.grid_sys.xgriddim[1]):
+                    self.Jplot[i, j] = maxJ if self.J[i, j] >= maxJ else self.J[i, j]
+        elif self.n_dim == 3:
+            for i in range(self.grid_sys.xgriddim[0]):
+                for j in range(self.grid_sys.xgriddim[1]):
+                    for k in range(len(self.J[i, j])):
+                        self.Jplot[i, j, k] = maxJ if self.J[i, j, k] >= maxJ else self.J[i, j, k]
+
+    ################################
+    def plot_cost2go(self, maxJ=1000):
+        """ print graphic """
+
+        self.plot_dynamic_cost2go(maxJ)
+        self.draw_cost2go(maxJ)
 
     ################################
     def plot_policy(self, i=0):
         """ print graphic """
+
+        plt.ion()
 
         xname = self.sys.state_label[0] + ' ' + self.sys.state_units[0]
         yname = self.sys.state_label[1] + ' ' + self.sys.state_units[1]
@@ -901,11 +657,12 @@ class ValueIteration_ND:
         self.fig1.canvas.set_window_title('Policy for u[%i]' % i)
         self.ax1 = self.fig1.add_subplot(1, 1, 1)
 
+        plot = policy_plot.T if self.n_dim == 2 else policy_plot[..., 0].T
         plt.ylabel(yname, fontsize=self.fontsize)
         plt.xlabel(xname, fontsize=self.fontsize)
         self.im1 = plt.pcolormesh(self.grid_sys.xd[0],
                                   self.grid_sys.xd[1],
-                                  policy_plot.T,
+                                  plot,
                                   shading='gouraud')
 
         plt.axis([self.sys.x_lb[0],
@@ -918,6 +675,42 @@ class ValueIteration_ND:
         plt.tight_layout()
 
         plt.draw()
+        plt.pause(0.001)
+
+        ################################
+
+    def plot_3D_policy(self, i=0):
+        """ print graphic """
+
+        plt.ion()
+
+        xname = self.sys.state_label[0] + ' ' + self.sys.state_units[0]
+        yname = self.sys.state_label[1] + ' ' + self.sys.state_units[1]
+
+        policy_plot = self.u_policy_grid[i].copy()
+        print(policy_plot.shape)
+
+        self.fig1 = plt.figure()
+        self.fig1.canvas.set_window_title('Policy for u[%i]' % i)
+        self.ax1 = self.fig1.gca(projection='3d')
+
+        plot = policy_plot.T if self.n_dim == 2 else policy_plot[..., 0].T
+        plt.ylabel(yname, fontsize=self.fontsize)
+        plt.xlabel(xname, fontsize=self.fontsize)
+        X = plot[:, 0]
+        Y = plot[:, 1]
+        Z = plot[:, 2]
+        self.ax1.plot_trisurf(X, Y, Z)
+
+        plt.axis([self.sys.x_lb[0],
+              self.sys.x_ub[0],
+              self.sys.x_lb[1],
+              self.sys.x_ub[1]])
+
+        # plt.colorbar()
+
+        plt.draw()
+        plt.pause(1)
 
         ################################
 
@@ -925,13 +718,17 @@ class ValueIteration_ND:
         """ Save optimal controller policy and cost to go """
 
         try:
-
             self.J = np.load(prefix + name + '_J' + '.npy')
             self.action_policy = np.load(prefix + name + '_a' + '.npy').astype(int)
+            print('File successfully loaded')
 
-        except:
+        except IOError:
+            type, value, traceback = sys.exc_info()
+            print('Error opening %s: %s' % (value.filename, value.strerror))
 
-            print('Failed to load DP data ', sys.exc_info()[0])
+        # returns filled array to signal that the trajectory has been loaded
+        # used in Slash library
+        return [1]
 
     ################################
     def save_data(self, name='DP_data', prefix=''):

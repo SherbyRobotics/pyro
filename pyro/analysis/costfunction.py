@@ -7,7 +7,11 @@ Created on Fri Aug 07 11:51:55 2015
 
 import numpy as np
 
-from abc import ABC
+import sys
+if sys.version > '3':
+    from abc import ABC
+else:
+    from abc import ABCMeta
 
 from collections import namedtuple
 
@@ -22,74 +26,143 @@ from . import Trajectory
 # Cost functions
 ##########################################################################
 
-class CostFunction(ABC):
-    """ 
-    Mother class for cost functions of continuous dynamical systems
-    ----------------------------------------------
-    n : number of states
-    m : number of control inputs
-    p : number of outputs
-    ---------------------------------------
-    J = int( g(x,u,y,t) * dt ) + h( x(T) , y(T) , T )
-    
-    """
-    ###########################################################################
-    # The two following functions needs to be implemented by child classes
-    ###########################################################################
+if sys.version > '3':
+    class CostFunction(ABC):
+        """
+        Mother class for cost functions of continuous dynamical systems
+        ----------------------------------------------
+        n : number of states
+        m : number of control inputs
+        p : number of outputs
+        ---------------------------------------
+        J = int( g(x,u,y,t) * dt ) + h( x(T) , y(T) , T )
 
-    ############################
-    def __init__(self):
-        self.INF = 1E3
-        self.EPS = 1E-3
-
-
-    #############################
-    def h(self, x , t = 0):
-        """ Final cost function """
-        
-        raise NotImplementedError
-    
-    
-    #############################
-    def g(self, x , u , y, t ):
-        """ step cost function """
-        
-        raise NotImplementedError
-
-    def eval(self, traj):
-        """Compute cost of simulation
-
-        Parameters
-        ----------
-        traj : instance of `pyro.analysis.Trajectory`
-
-        Returns
-        -------
-        A new instance of the input trajectory, with updated `J` and `dJ` fields
-
-        J : array of size ``traj.n`` (number of timesteps in trajectory)
-            Cumulative value of cost integral at each time step. The total cost is
-            therefore ``J[-1]``.
-
-        dJ : array of size ``traj.n`` (number of timesteps in trajectory)
-            Value of cost function evaluated at each point of the tracjectory.
         """
 
-        dJ = np.empty(traj.n)
-        for i in range(traj.n):
-            x = traj.x[i,:]
-            u = traj.u[i,:]
-            y = traj.y[i, :]
-            t = traj.t[i]
-            dJ[i] = self.g(x, u, y, t)
+        ###########################################################################
+        # The two following functions needs to be implemented by child classes
+        ###########################################################################
 
-        J = cumtrapz(y=dJ, x=traj.t, initial=0)
+        ############################
+        def __init__(self):
+            self.INF = 1E3
+            self.EPS = 1E-3
 
-        new_traj = copy(traj)
-        new_traj.J = J
-        new_traj.dJ = dJ
+        #############################
+        def h(self, x, t=0):
+            """ Final cost function """
 
-        return new_traj
+            raise NotImplementedError
+
+        #############################
+        def g(self, x, u, y, t):
+            """ step cost function """
+
+            raise NotImplementedError
+
+        def eval(self, traj):
+            """Compute cost of simulation
+
+            Parameters
+            ----------
+            traj : instance of `pyro.analysis.Trajectory`
+
+            Returns
+            -------
+            A new instance of the input trajectory, with updated `J` and `dJ` fields
+
+            J : array of size ``traj.n`` (number of timesteps in trajectory)
+                Cumulative value of cost integral at each time step. The total cost is
+                therefore ``J[-1]``.
+
+            dJ : array of size ``traj.n`` (number of timesteps in trajectory)
+                Value of cost function evaluated at each point of the tracjectory.
+            """
+
+            dJ = np.empty(traj.n)
+            for i in range(traj.n):
+                x = traj.x[i, :]
+                u = traj.u[i, :]
+                y = traj.y[i, :]
+                t = traj.t[i]
+                dJ[i] = self.g(x, u, y, t)
+
+            J = cumtrapz(y=dJ, x=traj.t, initial=0)
+
+            new_traj = copy(traj)
+            new_traj.J = J
+            new_traj.dJ = dJ
+
+            return new_traj
+else:
+    class CostFunction():
+        __metaclass__ = ABCMeta
+        """ 
+        Mother class for cost functions of continuous dynamical systems
+        ----------------------------------------------
+        n : number of states
+        m : number of control inputs
+        p : number of outputs
+        ---------------------------------------
+        J = int( g(x,u,y,t) * dt ) + h( x(T) , y(T) , T )
+
+        """
+
+        ###########################################################################
+        # The two following functions needs to be implemented by child classes
+        ###########################################################################
+
+        ############################
+        def __init__(self):
+            self.INF = 1E3
+            self.EPS = 1E-3
+
+        #############################
+        def h(self, x, t=0):
+            """ Final cost function """
+
+            raise NotImplementedError
+
+        #############################
+        def g(self, x, u, y, t):
+            """ step cost function """
+
+            raise NotImplementedError
+
+        def eval(self, traj):
+            """Compute cost of simulation
+
+            Parameters
+            ----------
+            traj : instance of `pyro.analysis.Trajectory`
+
+            Returns
+            -------
+            A new instance of the input trajectory, with updated `J` and `dJ` fields
+
+            J : array of size ``traj.n`` (number of timesteps in trajectory)
+                Cumulative value of cost integral at each time step. The total cost is
+                therefore ``J[-1]``.
+
+            dJ : array of size ``traj.n`` (number of timesteps in trajectory)
+                Value of cost function evaluated at each point of the tracjectory.
+            """
+
+            dJ = np.empty(traj.n)
+            for i in range(traj.n):
+                x = traj.x[i, :]
+                u = traj.u[i, :]
+                y = traj.y[i, :]
+                t = traj.t[i]
+                dJ[i] = self.g(x, u, y, t)
+
+            J = cumtrapz(y=dJ, x=traj.t, initial=0)
+
+            new_traj = copy(traj)
+            new_traj.J = J
+            new_traj.dJ = dJ
+
+            return new_traj
 
 #############################################################################
      
@@ -110,7 +183,11 @@ class QuadraticCostFunction( CostFunction ):
     
     ############################
     def __init__(self, q, r, v):
-        super().__init__()
+
+        if sys.version > '3':
+            super().__init__()
+        else:
+            super(QuadraticCostFunction, self).__init__()
 
         self.n = q.shape[0]
         self.m = r.shape[0]
@@ -190,8 +267,11 @@ class TimeCostFunction( CostFunction ):
     
     ############################
     def __init__(self, xbar ):
-        
-        super().__init__()
+
+        if sys.version > '3':
+            super().__init__()
+        else:
+            super(TimeCostFunction, self).__init__()
         
         self.xbar = xbar
         

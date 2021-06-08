@@ -99,7 +99,7 @@ class TransferFunction( ContinuousDynamicSystem ):
             plots[i].grid(True)
             plots[i].tick_params( labelsize = self.fontsize )
         
-        fig.canvas.set_window_title('Bode plot of ' + self.name)
+        fig.canvas.manager.set_window_title('Bode plot of ' + self.name)
         
         plt.show()
         
@@ -117,7 +117,7 @@ class TransferFunction( ContinuousDynamicSystem ):
         plot.grid(True)
         plot.tick_params( labelsize = self.fontsize )
         
-        fig.canvas.set_window_title('Poles and zeros of ' + self.name)
+        fig.canvas.manager.set_window_title('Poles and zeros of ' + self.name)
         
         plt.show()
         

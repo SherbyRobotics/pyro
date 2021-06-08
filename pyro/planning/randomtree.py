@@ -413,7 +413,7 @@ class RRT:
         self.fig_tree = plt.figure(figsize=(3, 2), dpi=300, frameon=True)
         
         # Set window title
-        self.fig_tree.canvas.set_window_title('RRT tree search for ' + 
+        self.fig_tree.canvas.manager.set_window_title('RRT tree search for ' + 
                                             self.sys.name )
         
         # Create axe
@@ -468,7 +468,7 @@ class RRT:
         self.fig_tree_3d = plt.figure( figsize = self.figsize, dpi = self.dpi )
         
         # Set window title
-        self.fig_tree_3d.canvas.set_window_title('RRT tree search for ' + 
+        self.fig_tree_3d.canvas.manager.set_window_title('RRT tree search for ' + 
                                             self.sys.name )
         
         # Create Axe
@@ -530,7 +530,7 @@ class RRT:
         self.fig_tree_dyna = plt.figure(figsize=(3, 2),dpi=300, frameon=True)
         
         # Set window title
-        self.fig_tree_dyna.canvas.set_window_title('RRT tree search for ' + 
+        self.fig_tree_dyna.canvas.manager.set_window_title('RRT tree search for ' + 
                                             self.sys.name )
         
         # Create axe

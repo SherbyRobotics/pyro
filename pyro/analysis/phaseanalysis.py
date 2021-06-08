@@ -96,7 +96,7 @@ class PhasePlot:
         
         self.phasefig = plt.figure( figsize = self.figsize , dpi = self.dpi,
                                    frameon=True)
-        self.phasefig.canvas.set_window_title('Phase plane of ' + 
+        self.phasefig.canvas.manager.set_window_title('Phase plane of ' + 
                                                 self.cds.name )
         
         

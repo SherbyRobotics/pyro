@@ -239,7 +239,7 @@ class Manipulator( mechanical.MechanicalSystem ):
         simfig , plots = plt.subplots( l, sharex=True, figsize=figsize,
                                       dpi=dpi, frameon=True)
             
-        simfig.canvas.set_window_title('End-Effector trajectory for ' + 
+        simfig.canvas.manager.set_window_title('End-Effector trajectory for ' + 
                                        self.name)
         
         

@@ -276,7 +276,7 @@ class ValueIteration_2D:
                     self.Jplot[i,j] = self.J[i,j]
         
         self.fig1 = plt.figure(figsize=(4, 4),dpi=300, frameon=True)
-        self.fig1.canvas.set_window_title('Cost-to-go')
+        self.fig1.canvas.manager.set_window_title('Cost-to-go')
         self.ax1  = self.fig1.add_subplot(1,1,1)
         
         plt.ylabel(yname, fontsize = self.fontsize)
@@ -306,7 +306,7 @@ class ValueIteration_2D:
         policy_plot = self.u_policy_grid[i].copy()
                 
         self.fig1 = plt.figure(figsize=(4, 4),dpi=300, frameon=True)
-        self.fig1.canvas.set_window_title('Policy for u[%i]'%i)
+        self.fig1.canvas.manager.set_window_title('Policy for u[%i]'%i)
         self.ax1  = self.fig1.add_subplot(1,1,1)
         
         plt.ylabel(yname, fontsize = self.fontsize )
@@ -597,7 +597,7 @@ class ValueIteration_ND:
         yname = self.sys.state_label[1] + ' ' + self.sys.state_units[1]
 
         self.fig_dynamic = plt.figure(figsize= self.figsize, dpi=self.dpi, frameon=True)
-        self.fig_dynamic.canvas.set_window_title('Dynamic Cost-to-go')
+        self.fig_dynamic.canvas.manager.set_window_title('Dynamic Cost-to-go')
         self.ax1_dynamic = self.fig_dynamic.add_subplot(1, 1, 1)
 
         plt.ylabel(yname, fontsize=self.fontsize)
@@ -720,7 +720,7 @@ class ValueIteration_ND:
         policy_plot = self.u_policy_grid[i].copy()
 
         self.fig1 = plt.figure(figsize=(4, 4), dpi=300, frameon=True)
-        self.fig1.canvas.set_window_title('Policy for u[%i]' % i)
+        self.fig1.canvas.manager.set_window_title('Policy for u[%i]' % i)
         self.ax1 = self.fig1.add_subplot(1, 1, 1)
 
         #plot = policy_plot.T if self.n_dim == 2 else policy_plot[..., 0].T
@@ -770,7 +770,7 @@ class ValueIteration_ND:
         print(policy_plot.shape)
 
         self.fig1 = plt.figure()
-        self.fig1.canvas.set_window_title('Policy for u[%i]' % i)
+        self.fig1.canvas.manager.set_window_title('Policy for u[%i]' % i)
         self.ax1 = self.fig1.gca(projection='3d')
 
         plot = policy_plot.T if self.n_dim == 2 else policy_plot[..., 0].T

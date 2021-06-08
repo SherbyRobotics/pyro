@@ -49,7 +49,7 @@ class MechanicalSystem( system.ContinuousDynamicSystem ):
         p = dof * 2
         
         # initialize standard params
-        system.ContinuousDynamicSystem.__init__(self, n, m, p)
+        super().__init__(n, m, p)
         
         # Name
         self.name = str(dof) + 'DoF Mechanical System'

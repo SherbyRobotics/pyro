@@ -31,7 +31,7 @@ class OpenLoopController( controller.StaticController ) :
         else:
             self.p = trajectory.x.shape[1]
 
-        controller.StaticController.__init__(self, self.k, self.m, self.p)
+        super().__init__(self.k, self.m, self.p)
         
         # Label
         self.name = 'Open Loop Controller'

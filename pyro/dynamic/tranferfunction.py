@@ -34,7 +34,7 @@ class TransferFunction( ContinuousDynamicSystem ):
 
         n = den.shape[0] - 1
         
-        ContinuousDynamicSystem.__init__(self, n, 1, 1)
+        super().__init__(n, 1, 1)
         
         self.compute_ss()
         self.compute_poleszeros()

@@ -167,7 +167,7 @@ class PhasePlot3( PhasePlot ):
     ###########################################################################
     def __init__(self, ContinuousDynamicSystem, x_axis=0,  y_axis=1, z_axis=2):
         
-        PhasePlot.__init__(self, ContinuousDynamicSystem, x_axis, y_axis)
+        super().__init__(ContinuousDynamicSystem, x_axis, y_axis)
         
         # Smaller resolution
         self.x_axis_n   = 5

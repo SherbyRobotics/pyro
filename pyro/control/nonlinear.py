@@ -47,7 +47,7 @@ class ComputedTorqueController( controller.StaticController ) :
         self.m = model.m
         self.p = model.p
         
-        controller.StaticController.__init__(self, self.k, self.m, self.p)
+        super().__init__(self.k, self.m, self.p)
         
         # Label
         self.name = 'Computed Torque Controller'
@@ -224,7 +224,7 @@ class SlidingModeController( ComputedTorqueController ):
     def __init__( self , model , traj = None ):
         """ """
         
-        ComputedTorqueController.__init__( self , model , traj )
+        super().__init__( model , traj )
         
         # Params
         self.lam  = 1   # Sliding surface slope

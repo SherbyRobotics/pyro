@@ -37,7 +37,7 @@ class RobotController( controller.StaticController ) :
         self.m = dof      # assuming fully-actuated system
         self.p = dof * 2  # y = x ( full state feedback )
         
-        controller.StaticController.__init__(self, self.k, self.m, self.p)
+        super().__init__(self.k, self.m, self.p)
         
         # Label
         self.name = 'Robot Controller'
@@ -78,7 +78,7 @@ class JointPD( RobotController ) :
     def __init__(self, dof = 1, kp = 1, kd = 0):
         """ """
         
-        RobotController.__init__( self , dof )
+        super().__init__( dof )
         
         # Label
         self.name = 'Joint PD Controller'
@@ -149,7 +149,7 @@ class EndEffectorPD( RobotController ) :
         self.J       = robot.J
         self.e       = robot.e # nb of effector dof
         
-        RobotController.__init__( self , robot.dof )
+        super().__init__( robot.dof )
         
         # Label
         self.name = 'End-Effector PID Controller'
@@ -314,7 +314,7 @@ class EndEffectorKinematicControllerWithNullSpaceTask( EndEffectorKinematicContr
     def __init__(self, robot, k = 1 , k_null = 1):
         """ """
         
-        EndEffectorKinematicController.__init__( self , robot , k )
+        super().__init__( robot , k )
         
         
         self.gains_null = np.ones( self.dof  ) * k_null
@@ -413,7 +413,7 @@ class JointPID( controller.DynamicController ) :
         self.m = dof      # assuming fully-actuated system
         self.p = dof * 2  # y = x ( full state feedback )
         
-        controller.DynamicController.__init__(self, self.k, self.l, self.m, self.p)
+        super().__init__(self.k, self.l, self.m, self.p)
         
         # Label
         self.name = 'Joint PID Controller'
@@ -545,7 +545,7 @@ class EndEffectorPID( controller.DynamicController ) :
         self.m = dof      # assuming fully-actuated system
         self.p = dof * 2  # y = x ( full state feedback )
         
-        controller.DynamicController.__init__(self, self.k, self.l, self.m, self.p)
+        super().__init__(self.k, self.l, self.m, self.p)
         
         # Label
         self.name = 'End-Effector PID Controller'
@@ -667,7 +667,7 @@ class old_JointPID( RobotController ) :
     def __init__(self, dof = 1, kp = 1, ki = 0, kd = 0):
         """ """
         
-        RobotController.__init__( self , dof )
+        super().__init__( dof )
         
         # Label
         self.name = 'Joint PID Controller'
@@ -748,7 +748,7 @@ class old_EndEffectorPID( RobotController ) :
         self.J       = robot.J
         self.e       = robot.e # nb of effector dof
         
-        RobotController.__init__( self , robot.dof )
+        super().__init__( robot.dof )
         
         # Label
         self.name = 'End-Effector PID Controller'

@@ -30,7 +30,7 @@ class SimpleIntegrator( system.ContinuousDynamicSystem ):
         self.p = 1
         
         # initialize standard params
-        system.ContinuousDynamicSystem.__init__(self, self.n, self.m, self.p)
+        super().__init__(self.n, self.m, self.p)
         
         # Labels
         self.name = 'Simple Integrator'
@@ -89,7 +89,7 @@ class DoubleIntegrator( system.ContinuousDynamicSystem ):
         self.p = 1
         
         # initialize standard params
-        system.ContinuousDynamicSystem.__init__(self, self.n, self.m, self.p)
+        super().__init__(self.n, self.m, self.p)
     
         # Labels
         self.name = 'Double Integrator'
@@ -172,7 +172,7 @@ class TripleIntegrator( system.ContinuousDynamicSystem ):
         self.p = 1
         
         # initialize standard params
-        system.ContinuousDynamicSystem.__init__(self, self.n, self.m, self.p)
+        super().__init__(self.n, self.m, self.p)
         
         # Labels
         self.name = 'Triple Integrator'

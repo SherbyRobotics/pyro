@@ -22,7 +22,7 @@ class SwitchedSystem(ContinuousDynamicSystem):
     ############################################
     def __init__(self, n, m, p, k):
         
-        ContinuousDynamicSystem.__init__(self, n, m, p)
+        super().__init__(n, m, p)
         
         
         self.k = k  # Number of discrte modes

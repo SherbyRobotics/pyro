@@ -250,7 +250,7 @@ class CLosedLoopSimulator(Simulator):
     def __init__(self, ClosedLoopSystem, tf=10, n=10001, solver='ode'):
         
         # Mother class init
-        Simulator.__init__( self, ClosedLoopSystem, tf, n, solver)
+        super().__init__(ClosedLoopSystem, tf, n, solver)
         
         # Special cases
         

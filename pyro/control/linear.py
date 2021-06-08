@@ -44,7 +44,7 @@ class ProportionnalSingleVariableController( controller.StaticController ) :
         self.m = k   
         self.p = k
         
-        controller.StaticController.__init__(self, self.k, self.m, self.p)
+        super().__init__(self.k, self.m, self.p)
         
         # Label
         self.name = 'Proportionnal Controller'
@@ -98,7 +98,7 @@ class ProportionalController(controller.StaticController):
         m = self.K.shape[0]
         p = self.K.shape[1]
         
-        controller.StaticController.__init__(self, k, m, p)
+        super().__init__(k, m, p)
 
         self.rbar = np.zeros((self.k,))
         self.name = "%d X %d Proportional Contrller" % self.K.shape
@@ -167,7 +167,7 @@ class PIDController( controller.DynamicController ):
         m = self.KP.shape[0]
         p = self.KP.shape[1]
 
-        controller.DynamicController.__init__( self, k, l, m, p)
+        super().__init__(k, l, m, p)
         
         for i in range(p):
             self.internal_state_label[i] = 'Integral of output ' + str(i)

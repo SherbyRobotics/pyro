@@ -44,7 +44,7 @@ class ViController(controller.StaticController):
         self.m = m   
         self.p = p
         
-        controller.StaticController.__init__(self, self.k, self.m, self.p)
+        super().__init__(self.k, self.m, self.p)
         
         # Label
         self.name = 'Value Iteration Controller'

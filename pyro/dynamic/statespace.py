@@ -30,7 +30,7 @@ class StateSpaceSystem(ContinuousDynamicSystem):
         m = B.shape[1]
         p = C.shape[0]
         
-        ContinuousDynamicSystem.__init__(self, n, m, p)
+        super().__init__(n, m, p)
         
     ############################################
     def _check_dimensions(self):

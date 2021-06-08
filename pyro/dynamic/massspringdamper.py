@@ -37,7 +37,7 @@ class SingleMass( statespace.StateSpaceSystem ):
         self.compute_ABCD()
         
         # initialize standard params
-        statespace.StateSpaceSystem.__init__(self, self.A, self.B, self.C, self.D)
+        super().__init__(self.A, self.B, self.C, self.D)
         
         # Name and labels
         self.name = 'Linear-Spring-Damper'
@@ -185,7 +185,7 @@ class TwoMass( statespace.StateSpaceSystem ):
         self.compute_ABCD()
         
         # initialize standard params
-        statespace.StateSpaceSystem.__init__(self, self.A, self.B, self.C, self.D)
+        super().__init__(self.A, self.B, self.C, self.D)
         
         # Name and labels
         self.name = 'Two mass with linear spring-dampers'
@@ -378,7 +378,7 @@ class ThreeMass( statespace.StateSpaceSystem ):
         self.compute_ABCD()
         
         # initialize standard params
-        statespace.StateSpaceSystem.__init__(self, self.A, self.B, self.C, self.D)
+        super().__init__(self.A, self.B, self.C, self.D)
         
         # Name and labels
         self.name = 'Three mass with linear spring-dampers'

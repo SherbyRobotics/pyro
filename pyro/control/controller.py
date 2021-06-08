@@ -567,7 +567,7 @@ class DynamicClosedLoopSystem( ClosedLoopSystem ):
         
         plant.cost_function = None
         
-        ClosedLoopSystem.__init__( self, plant, controller)
+        super().__init__(plant, controller)
 
         # Add extra states that represent system memory
         self.n = self.plant.n + self.controller.l

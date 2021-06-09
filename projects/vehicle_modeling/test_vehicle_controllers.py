@@ -40,7 +40,7 @@ class kinematicInputs( controller.StaticController ) :
         self.m = 2   
         self.p = 3
         
-        controller.StaticController.__init__(self, self.k, self.m, self.p)
+        super().__init__(self.k, self.m, self.p)
         
         # Label
         self.name = 'Proportionnal Controller'
@@ -194,7 +194,7 @@ class dynLongForcesInputs( controller.StaticController ) :
         self.m = 3   
         self.p = 6
         
-        controller.StaticController.__init__(self, self.k, self.m, self.p)
+        super().__init__(self.k, self.m, self.p)
         
         # Label
         self.name = 'Proportionnal Controller'
@@ -264,7 +264,7 @@ class fullDynTorqueInputs( controller.StaticController ) :
         self.m = 3   
         self.p = 8
         
-        controller.StaticController.__init__(self, self.k, self.m, self.p)
+        super().__init__(self.k, self.m, self.p)
         
         # Label
         self.name = 'Proportionnal Controller'
@@ -341,7 +341,7 @@ class fullDynVoltInputs( controller.StaticController ) :
         self.m = 2   
         self.p = 7
         
-        controller.StaticController.__init__(self, self.k, self.m, self.p)
+        super().__init__(self.k, self.m, self.p)
         
         # Label
         self.name = 'Proportionnal Controller'

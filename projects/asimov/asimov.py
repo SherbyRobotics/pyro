@@ -27,7 +27,7 @@ class Asimov( manipulator.ThreeLinkManipulator3D ):
         """ """
 
         # initialize standard params
-        manipulator.ThreeLinkManipulator3D.__init__(self)
+        super().__init__()
 
         # Name
         self.name = 'Asimov Manipulator'
@@ -81,7 +81,7 @@ class Asimov2D( manipulator.TwoLinkManipulator ):
         """ """
 
         # initialize standard params
-        manipulator.TwoLinkManipulator.__init__(self)
+        super().__init__()
 
         # Name
         self.name = 'Asimov 2D Manipulator'

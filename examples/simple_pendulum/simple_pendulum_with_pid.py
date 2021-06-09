@@ -15,7 +15,7 @@ from pyro.control  import linear
 class SinglePendulum_with_position_output( pendulum.SinglePendulum ):
     
     def __init__(self):
-        pendulum.SinglePendulum.__init__( self )
+        super().__init__()
         
         self.p    = 1             # output size
         #self.rbar = np.array([0]) # ref size

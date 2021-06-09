@@ -21,7 +21,7 @@ class CustomDrillingController( EndEffectorPD ) :
     def __init__(self, robot_model ):
         """ """
         
-        EndEffectorPD.__init__( self , robot_model )
+        super().__init__(robot_model)
         
         # Label
         self.name = 'Custom Drilling Controller'

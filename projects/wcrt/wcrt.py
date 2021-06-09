@@ -21,7 +21,7 @@ class WCRT( mechanical.MechanicalSystem ):
         """ """
                
         # initialize standard params
-        mechanical.MechanicalSystem.__init__(self, 3)
+        super().__init__(3)
         
         # Name
         self.name = 'WCRT'

@@ -24,7 +24,7 @@ class CartPoleController( controller.StaticController ) :
         self.m   = 1
         self.p   = 4 
         
-        controller.StaticController.__init__(self, self.k, self.m, self.p)
+        super().__init__(self.k, self.m, self.p)
         
         # Label
         self.name = 'Cart Pole Controller'

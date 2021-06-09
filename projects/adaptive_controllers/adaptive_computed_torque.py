@@ -34,7 +34,7 @@ class SinglePendulumAdaptativeController( controller.DynamicController ):
         p = model.p
         l = 2
         
-        controller.DynamicController.__init__( self, k, l, m, p)
+        super().__init__(k, l, m, p)
         
         # Init internal states
         self.z0 = np.array([0.2,0.2])
@@ -157,7 +157,7 @@ class DoublePendulumAdaptativeController(  controller.DynamicController ):
         p = model.p
         l = 5
         
-        controller.DynamicController.__init__( self, k, l, m, p)
+        super().__init__(k, l, m, p)
         
         
         
@@ -329,7 +329,7 @@ class AdaptativeController_WCRT( controller.DynamicController ):
         p = model.p
         l = self.A.shape[0]
         
-        controller.DynamicController.__init__( self, k, l, m, p) 
+        super().__init__(k, l, m, p) 
         
         
     ##############################

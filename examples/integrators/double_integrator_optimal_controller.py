@@ -31,7 +31,7 @@ class DoubleIntegrator2( system.ContinuousDynamicSystem ):
         self.p = 2
         
         # initialize standard params
-        system.ContinuousDynamicSystem.__init__(self, self.n, self.m, self.p)
+        super().__init__(self.n, self.m, self.p)
     
         # Labels
         self.name = 'Double Integrator'
@@ -90,7 +90,7 @@ class OptmimalDoubleIntegratorController( controller.StaticController ) :
         self.m   = 1
         self.p   = 2
         
-        controller.StaticController.__init__(self, self.k, self.m, self.p)
+        super().__init__(self.k, self.m, self.p)
         
         # Label
         self.name = 'Optmimal Double Integrator Controller'

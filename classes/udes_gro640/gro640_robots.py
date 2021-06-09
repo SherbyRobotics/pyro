@@ -31,7 +31,7 @@ class LaserRobot( SpeedControlledManipulator ):
         e   = 2
                
         # initialize standard params
-        SpeedControlledManipulator.__init__( self, dof, e)
+        super().__init__(dof, e)
         
         # Name
         self.name = 'Robot planaire de gravure laser'
@@ -185,7 +185,7 @@ class DrillingRobot( ThreeLinkManipulator3D ):
         """ """
                
         # initialize standard params
-        ThreeLinkManipulator3D.__init__(self)
+        super().__init__()
         
         # Name
         self.name = 'Drilling Robot'
@@ -502,7 +502,7 @@ class DrillingRobotOnJig( DrillingRobot ):
     def __init__(self):
         """ """
         
-        DrillingRobot.__init__( self )
+        super().__init__()
         
         self.hole_position = np.array([0.25,0.25,0.4])
         self.hole_radius   = 0.05

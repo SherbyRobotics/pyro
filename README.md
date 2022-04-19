@@ -1,3 +1,5 @@
+The latest version of this code is now hosted here: https://github.com/SherbyRobotics/pyro
+
 # Pyro 
 
 An object-based toolbox for robot dynamic simulation, analysis, control and planning. 

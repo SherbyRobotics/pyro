@@ -403,8 +403,8 @@ class ContinuousDynamicSystem:
         
     #############################
     def compute_trajectory(
-        self, tf=10, n=10001, solver='ode'):
-        """ 
+        self, tf=10, n=None, solver='ode', **solver_args):
+        """
         Simulation of time evolution of the system
         ------------------------------------------------
         tf : final time
@@ -413,7 +413,8 @@ class ContinuousDynamicSystem:
 
         sim = simulation.Simulator(self, tf, n, solver)
 
-        self.traj = sim.compute() # save the result in the instance
+        # solve and save the result in the instance
+        self.traj = sim.compute(**solver_args)
 
         return self.traj
 

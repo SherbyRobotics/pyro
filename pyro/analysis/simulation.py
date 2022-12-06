@@ -7,7 +7,7 @@ Created on Fri Aug 07 11:51:55 2015
 
 import numpy as np
 
-from scipy.integrate import odeint
+from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
 
 ##########################################################################
@@ -217,46 +217,67 @@ class Simulator:
     tf     : float : final time for simulation
     n      : int   : number of time steps
     solver : {'ode', 'euler'}
+        If ode, uses `scipy.integrate.solve_ivp`. `euler` uses built-in
+        solver based on the Euler method.
     """
-    
+
     ############################
     def __init__(
-        self, ContinuousDynamicSystem, tf=10, n=10001, solver='ode'):
+        self, ContinuousDynamicSystem, tf=10, n=None, solver='ode'):
 
         self.cds    = ContinuousDynamicSystem
         self.t0     = 0
         self.tf     = tf
-        self.n      = int(n)
-        self.dt     = ( tf + 0.0 - self.t0 ) / ( n - 1 )
+        self.n      = n
         self.solver = solver
         self.x0     = self.cds.x0
         self.cf     = self.cds.cost_function 
-        
+
         # Check Initial condition state-vector
         if self.x0.size != self.cds.n:
             raise ValueError(
                 "Number of elements in x0 must be equal to number of states"
             )
-            
+
 
     ##############################
-    def compute(self):
-        """ Integrate trought time """
+    def compute(self, **solver_args):
+        """Integrate trough time
 
-        t  = np.linspace( self.t0 , self.tf , self.n )
+        Parameters
+        -----------
+        kwargs: Keyword arguments passed through to the solver (e.g. solve_ivp)
+        """
 
         if self.solver == 'ode':
+            t_eval = None
+            if self.n is not None:
+                t_eval = np.linspace(self.t0 , self.tf , int(self.n))
 
-            x_sol = odeint( self.cds.fsim , self.x0 , t)
+            # solve_ivp takes arguments in reverse order of fsim
+            def solverfun(t, y):
+                dy = self.cds.fsim(y, t)
+                return dy
+
+            sol = solve_ivp(
+                solverfun,
+                t_span=[self.t0, self.tf],
+                y0=self.x0,
+                t_eval=t_eval,
+                **solver_args
+            )
 
             # Compute inputs-output values
-            y_sol  = np.zeros(( self.n , self.cds.p ))
-            u_sol  = np.zeros((self.n,self.cds.m))
-            dx_sol = np.zeros((self.n,self.cds.n))
+            t_sol = sol.t
+            n_sol = t_sol.shape[0]
+            x_sol = sol.y.transpose()
+            y_sol  = np.zeros((n_sol, self.cds.p ))
+            u_sol  = np.zeros((n_sol, self.cds.m))
+            dx_sol = np.zeros((n_sol, self.cds.n))
 
-            for i in range(self.n):
-                ti = t[i]
-                xi = x_sol[i,:]
+            for i in range(n_sol):
+                ti = t_sol[i]
+                xi = x_sol[i, :]
                 ui = self.cds.t2u( ti )
 
                 dx_sol[i,:] = self.cds.f( xi , ui , ti )
@@ -264,22 +285,24 @@ class Simulator:
                 u_sol[i,:]  = ui
 
         elif self.solver == 'euler':
+            npts = 10001 if self.n is None else int(self.n)
+            t_sol = np.linspace(self.t0 , self.tf , npts)
 
-            x_sol  = np.zeros((self.n,self.cds.n))
-            dx_sol = np.zeros((self.n,self.cds.n))
-            u_sol  = np.zeros((self.n,self.cds.m))
-            y_sol  = np.zeros((self.n,self.cds.p))
+            x_sol  = np.zeros((npts, self.cds.n))
+            dx_sol = np.zeros((npts, self.cds.n))
+            u_sol  = np.zeros((npts, self.cds.m))
+            y_sol  = np.zeros((npts, self.cds.p))
 
             # Initial State
             x_sol[0,:] = self.x0
-            dt = ( self.tf + 0.0 - self.t0 ) / ( self.n - 1 )
-            for i in range(self.n):
+            dt = ( self.tf + 0.0 - self.t0 ) / ( npts - 1 )
+            for i in range(npts):
 
-                ti = t[i]
+                ti = t_sol[i]
                 xi = x_sol[i,:]
                 ui = self.cds.t2u( ti )
 
-                if i+1<self.n:
+                if i+1 < npts:
                     dx_sol[i]    = self.cds.f( xi , ui , ti )
                     x_sol[i+1,:] = dx_sol[i] * dt + xi
 
@@ -290,7 +313,7 @@ class Simulator:
         traj = Trajectory(
           x = x_sol,
           u = u_sol,
-          t = t,
+          t = t_sol,
           dx= dx_sol,
           y = y_sol
         )
@@ -358,26 +381,27 @@ class CLosedLoopSimulator(Simulator):
         
 
     ###########################################################################
-    def _compute_control_inputs(self, traj ):
+    def _compute_control_inputs(self, traj):
         """ Compute internal control inputs of the closed-loop system """
 
         r = traj.u.copy() # reference is input of combined sys
-        u = np.zeros((self.n,self.cds.plant.m))
+        npts = traj.t.shape[0]
+        u = np.zeros([npts, self.cds.plant.m])
 
         # Compute internal input
-        for i in range(self.n):
+        for i in range(npts):
 
             ri = r[i,:]
             yi = traj.y[i,:]
             ti = traj.t[i]
 
             ui = self.cds.controller.c( yi , ri , ti )
-            
+
             u[i,:] = ui
 
         return u
-    
-    
+
+
 ###############################################################################
 # Dynamic Closed Loop Simulator
 ###############################################################################
@@ -392,21 +416,22 @@ class DynamicCLosedLoopSimulator( CLosedLoopSimulator ):
         """ Compute internal control inputs of the closed-loop system """
 
         r = traj.u.copy() # reference is input of combined sys
-        u = np.zeros((self.n,self.cds.plant.m))
+        npts = traj.t.shape[0]
+        u = np.zeros([npts ,self.cds.plant.m])
 
         # Compute internal input signal_proc
-        for i in range(self.n):
+        for i in range(npts):
 
             ri = r[i,:]
             yi = traj.y[i,:]
             xi = traj.x[i,:]
             ti = traj.t[i]
-            
+
             # extract internal controller states
             xi,zi = self.cds._split_states( xi ) 
 
             ui = self.cds.controller.c( zi, yi , ri , ti )
-            
+
             u[i,:] = ui
 
         return u

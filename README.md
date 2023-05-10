@@ -2,7 +2,7 @@
 
 An object-based toolbox for robot dynamic simulation, analysis, control and planning. 
 
-### A collection of dynamic systems:
+### Pyro is a collection of dynamic systems:
 <table>
   <tr>
     <td>
@@ -21,7 +21,7 @@ An object-based toolbox for robot dynamic simulation, analysis, control and plan
   </tr>
 </table>
 
-### A collection of controller synthesis and planning tools:
+### plus a collection of controller synthesis and planning tools:
 <table>
   <tr>
     <th>
@@ -51,7 +51,7 @@ An object-based toolbox for robot dynamic simulation, analysis, control and plan
   </tr>
 </table>
 
-### A collection of analysis tools:
+### plus a collection of analysis tools:
 <table>
   <tr>
     <th>
@@ -80,7 +80,7 @@ An object-based toolbox for robot dynamic simulation, analysis, control and plan
   </tr>
 </table>
 
-### Unified by a standardized "dynamic system" and "controller" class hierarchy
+### all unified by a standardized "dynamic system" and "controller" class hierarchy.
 
 The concept of this toolbox is a hierachy of "dynamic system" objects, from the most generic representation (any non-linear differential equations) to more system specific representations such as mechanical system (second order equations), linear state space, manipulator equations, etc. This structure is then leveraged by analysis tools, from generic tools that work for all sub-class of dynamic systems such as running simulation and phase-plane analysis, to system-specific tools that leverage specific system propreties such as modal analysis for linear sub-class:
 

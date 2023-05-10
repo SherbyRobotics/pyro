@@ -6,17 +6,17 @@ An object-based toolbox for robot dynamic simulation, analysis, control and plan
 <table>
   <tr>
     <td>
-      <img src="https://www.alexandregirard.com/IMG/compressed_gif/rocket.gif" alt="rocket" width="200"/>
+      <img src="https://www.alexandregirard.com/IMG/compressed_gif/rocket.gif" alt="rocket" width="190"/>
     </td>
     <td>
-      <img src="https://user-images.githubusercontent.com/16725496/163005905-ad2205b0-150d-44de-bd43-a3b31a0bf10e.gif" alt="cartpole" width="200"/>
+      <img src="https://user-images.githubusercontent.com/16725496/163005905-ad2205b0-150d-44de-bd43-a3b31a0bf10e.gif" alt="cartpole" width="190"/>
     </td> 
     <td>
       <!--- <img src="https://www.alexandregirard.com/IMG/compressed_gif/drone.gif" alt="drone" width="360"/> --->
-      <img src="https://www.alexandregirard.com/IMG/compressed_gif/cartpole_swing_up.gif" alt="cartpole_swing_up" width="200"/>
+      <img src="https://www.alexandregirard.com/IMG/compressed_gif/cartpole_swing_up.gif" alt="cartpole_swing_up" width="190"/>
     </td>
     <td>
-      <img src="https://www.alexandregirard.com/IMG/compressed_gif/two_mass_spring_pid.gif" alt="mass-spring" width="200"/>
+      <img src="https://www.alexandregirard.com/IMG/compressed_gif/two_mass_spring_pid.gif" alt="mass-spring" width="190"/>
     </td> 
   </tr>
 </table>

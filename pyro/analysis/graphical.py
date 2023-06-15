@@ -40,6 +40,8 @@ if hasattr(python_system, 'ps1'):
 else:
     # We want to block figure to prevent the script from terminating
     figure_blocking  = True   # Set to block the code when showing a figure
+    
+figure_blocking  = False
         
 # Embed font type in PDF when exporting
 matplotlib.rcParams['pdf.fonttype'] = 42

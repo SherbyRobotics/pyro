@@ -9,7 +9,7 @@ import numpy as np
 
 from gro640_robots import LaserRobot
 
-from abcd1234      import CustomPositionController  # Empty template
+from augn1301      import CustomPositionController  # Empty template
 
 
 # Model cinématique du robot

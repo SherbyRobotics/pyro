@@ -25,8 +25,8 @@ ctl.rbar = np.array([0,-1])
 clsys = ctl + sys
 
 # Configurations de départs
-clsys.x0 =  np.array([0,0.5,0]) # crash 
-#clsys.x0 =  np.array([0,0.7,0]) # fonctionne
+#clsys.x0 =  np.array([0,0.5,0]) # crash 
+clsys.x0 =  np.array([0,0.7,0]) # fonctionne
 
 # Simulation
 clsys.compute_trajectory( solver = 'odeint'  )

@@ -8,7 +8,7 @@ Created on Fri May  1 19:51:49 2020
 import numpy as np
 
 from gro640_robots import DrillingRobot
-from abcd1234      import goal2r, r2q # Load your functions
+from augn1301      import goal2r, r2q # Load your functions
 
 # Define end-effector motion
 r_0 = np.array([  0.5,   0.0,   1.0]) # start
@@ -22,7 +22,7 @@ n = r.shape[1] # Number of time steps
 
 # Compute the trajectory of the joints
 model      = DrillingRobot() # Robot Model
-q, dq, ddq = r2q( r, dr, ddr , model  )
+q, dq, ddq = r2q( r, dr, ddr , model )
 
 t   = np.linspace(0, t_f, n)   # t
 q1  = q[0,:]

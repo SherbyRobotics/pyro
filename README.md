@@ -104,11 +104,7 @@ The concept of this toolbox is a hierachy of "dynamic system" objects, from the 
 
 <img width="800" src="https://user-images.githubusercontent.com/16725496/163312294-e33d791f-9cc0-48e1-acb3-8a0ebfc0c067.jpg" class="center">
 
-<img width="800" src="https://github.com/SherbyRobotics/pyro/assets/16725496/d0b58781-69b0-4733-9bcc-d924dee3f60f" class="center">
-
-
-![dynamichierarchy](https://github.com/SherbyRobotics/pyro/assets/16725496/d0b58781-69b0-4733-9bcc-d924dee3f60f)
-
+<img width="800" src="https://github.com/SherbyRobotics/pyro/assets/16725496/09793c25-f6da-4a95-a03d-c015627fa7f2" class="center">
 
 The core of the library is a mother "dynamic system" class defined by a differential equation $\dot{x} = f(x,u,t)$, an output equation $y = h(x,u,t)$ and a foward kinematic equation $lines = f_{kinematic}(x,u,t)$ that is used for generating animations:
 

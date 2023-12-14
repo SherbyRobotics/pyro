@@ -52,7 +52,7 @@ An object-based toolbox for robot dynamic simulation, analysis, control and plan
     </th>
     <th>
       Direct collocation trajectory optimisation
-      <img src="https://www.alexandregirard.com/IMG/compressed_gif/double_pendulum_swing_up.gif" alt="policy" width="320"/>
+      <img src="https://www.alexandregirard.com/IMG/compressed_gif/double_pendulum_swing_up.gif" alt="policy" width="360"/>
     </th> 
   </tr>
 </table>
@@ -106,7 +106,7 @@ The concept of this toolbox is a hierachy of "dynamic system" objects, from the 
 
 The core of the library is a mother "dynamic system" class defined by a differential equation $\dot{x} = f(x,u,t)$, an output equation $y = h(x,u,t)$ and a foward kinematic equation $lines = f_{kinematic}(x,u,t)$ that is used for generating animations:
 
-<img width="800" src="https://github.com/SherbyRobotics/pyro/assets/16725496/16cdb4f0-82aa-42d4-8b6a-82dbde04e75e" class="center">
+<img width="500" src="https://github.com/SherbyRobotics/pyro/assets/16725496/16cdb4f0-82aa-42d4-8b6a-82dbde04e75e" class="center">
 
 # How to use #
 

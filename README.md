@@ -32,7 +32,7 @@ An object-based toolbox for robot dynamic simulation, analysis, control and plan
     </th>
     <th>
       Sliding mode controller
-      <img src="https://user-images.githubusercontent.com/16725496/197431126-f5d3660b-0e4b-4e35-bed3-c9b4e40f138e.png" alt="policy" width="320"/>
+      <img src="https://user-images.githubusercontent.com/16725496/197431126-f5d3660b-0e4b-4e35-bed3-c9b4e40f138e.png" alt="policy" width="360"/>
     </th> 
   </tr>
   <tr>
@@ -62,7 +62,7 @@ An object-based toolbox for robot dynamic simulation, analysis, control and plan
   <tr>
     <th>
       Simulation (computing trajectories)
-      <img src="https://user-images.githubusercontent.com/16725496/197414346-35a5fa67-2e44-407c-9342-d9d6f7652716.png" alt="traj" width="320"/>
+      <img src="https://user-images.githubusercontent.com/16725496/197414346-35a5fa67-2e44-407c-9342-d9d6f7652716.png" alt="traj" width="360"/>
     </th>
     <th>
       Phase plane analysis
@@ -106,8 +106,7 @@ The concept of this toolbox is a hierachy of "dynamic system" objects, from the 
 
 The core of the library is a mother "dynamic system" class defined by a differential equation $\dot{x} = f(x,u,t)$, an output equation $y = h(x,u,t)$ and a foward kinematic equation $lines = f_{kinematic}(x,u,t)$ that is used for generating animations:
 
-<img width="500" src="https://user-images.githubusercontent.com/16725496/163312300-faa7fe2c-178e-4c58-ae6c-4b256fd9ab92.jpg" class="center">
-
+<img width="800" src="https://github.com/SherbyRobotics/pyro/assets/16725496/16cdb4f0-82aa-42d4-8b6a-82dbde04e75e" class="center">
 
 # How to use #
 

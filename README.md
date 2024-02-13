@@ -2,6 +2,8 @@
 
 An object-based toolbox for robot dynamic simulation, analysis, control and planning. 
 
+[![Github All Releases](https://img.shields.io/github/downloads/SherbyRobotics/pyro/total.svg)]()
+
 ### Pyro is a collection of dynamic systems:
 <table>
   <tr>

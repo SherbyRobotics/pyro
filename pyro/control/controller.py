@@ -306,6 +306,7 @@ class ClosedLoopSystem( system.ContinuousDynamicSystem ):
         
         # Default State and inputs        
         self.xbar = self.plant.xbar
+        self.tbar = self.plant.tbar
         self.ubar = self.controller.rbar
         
         ################################

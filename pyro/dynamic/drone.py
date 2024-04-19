@@ -12,6 +12,8 @@ import matplotlib.pyplot as plt
 ###############################################################################
 from pyro.dynamic import system
 from pyro.dynamic import mechanical
+from pyro.kinematic import geometry
+from pyro.kinematic import drawing
 ###############################################################################
 
 
@@ -255,40 +257,81 @@ class Drone2D( mechanical.MechanicalSystem ):
         lines_pts = [] # list of array (n_pts x 3) for each lines
         lines_style = []
         lines_color = []
+
+        q, dq = self.x2q(x)
+        
+        x     = q[0]
+        y     = q[1]
+        theta = q[2]
+        
+        world_T_body = geometry.transformation_matrix_2D( theta , x , y )
         
         ###########################
         # drone trust force vectors
         ###########################
+
+        ###########################
+        # Trust vector
+        ###########################
         
-        xcg = x[0]
-        ycg = x[1]
-        s = np.sin(x[2])
-        c = np.cos(x[2])
-        l = self.width
-        h = self.height 
-        h2 = self.height * u[0]
+        # Max trust --> arrow is long as airplane
+        f_scale = self.width / (self.u_ub[0] - self.u_lb[0])
         
-        pts      = np.zeros(( 5 , 3 ))
-        pts[0,:] = np.array([xcg+l*c-h*s,ycg+l*s+h*c,0])
-        pts[1,:] = np.array([xcg+l*c-h2*s,ycg+l*s+h2*c,0])
-        pts[2,:] = pts[1,:] + np.array([-h*c+h*s,-h*s-h*c,0])
-        pts[3,:] = pts[1,:] 
-        pts[4,:] = pts[1,:] + np.array([h*c+h*s,h*s-h*c,0])
+        vy = u[0] * f_scale
+
+        bx = self.width * -1.0
+        by = self.height * 1.0
         
-        lines_pts.append( pts )
+        trust_arrow_body = drawing.arrow_from_length_angle( vy , np.pi * 0.5 , bx , by )
+        
+        trust_arrow_world = drawing.transform_points_2D( world_T_body , trust_arrow_body )
+        
+        lines_pts.append( trust_arrow_world )
         lines_style.append( '-')
-        lines_color.append( 'r' )
+        lines_color.append( 'r')
+
+        vy = u[1] * f_scale
+
+        bx = self.width * +1.0
+        by = self.height * 1.0
         
-        pts      = np.zeros(( 5 , 3 ))
-        pts[0,:] = np.array([xcg-l*c-h*s,ycg-l*s+h*c,0])
-        pts[1,:] = np.array([xcg-l*c-h2*s,ycg-l*s+h2*c,0])
-        pts[2,:] = pts[1,:] + np.array([-h*c+h*s,-h*s-h*c,0])
-        pts[3,:] = pts[1,:] 
-        pts[4,:] = pts[1,:] + np.array([h*c+h*s,h*s-h*c,0])
+        trust_arrow_body = drawing.arrow_from_length_angle( vy , np.pi * 0.5 , bx , by )
         
-        lines_pts.append( pts )
+        trust_arrow_world = drawing.transform_points_2D( world_T_body , trust_arrow_body )
+        
+        lines_pts.append( trust_arrow_world )
         lines_style.append( '-')
-        lines_color.append( 'r' )
+        lines_color.append( 'r')
+        
+        # xcg = x[0]
+        # ycg = x[1]
+        # s = np.sin(x[2])
+        # c = np.cos(x[2])
+        # l = self.width
+        # h = self.height 
+        # h2 = self.height * u[0]
+        
+        # pts      = np.zeros(( 5 , 3 ))
+        # pts[0,:] = np.array([xcg+l*c-h*s,ycg+l*s+h*c,0])
+        # pts[1,:] = np.array([xcg+l*c-h2*s,ycg+l*s+h2*c,0])
+        # pts[2,:] = pts[1,:] + np.array([-h*c+h*s,-h*s-h*c,0])
+        # pts[3,:] = pts[1,:] 
+        # pts[4,:] = pts[1,:] + np.array([h*c+h*s,h*s-h*c,0])
+        
+        # lines_pts.append( pts )
+        # lines_style.append( '-')
+        # lines_color.append( 'r' )
+        
+        # pts      = np.zeros(( 5 , 3 ))
+        # pts[0,:] = np.array([xcg-l*c-h*s,ycg-l*s+h*c,0])
+        # pts[1,:] = np.array([xcg-l*c-h2*s,ycg-l*s+h2*c,0])
+        # pts[2,:] = pts[1,:] + np.array([-h*c+h*s,-h*s-h*c,0])
+        # pts[3,:] = pts[1,:] 
+        # pts[4,:] = pts[1,:] + np.array([h*c+h*s,h*s-h*c,0])
+        
+        # lines_pts.append( pts )
+        # lines_style.append( '-')
+        # lines_color.append( 'r' )
                 
         return lines_pts , lines_style , lines_color
     
@@ -802,8 +845,8 @@ if __name__ == "__main__":
         
         sys.x0[5] = 0
         
-        sys.ubar[0] = 9.81 * 0.6
-        sys.ubar[1] = 9.81 * 0.7
+        sys.ubar[0] = 9.81 * 1.1
+        sys.ubar[1] = 9.81 * 0.9
         
         sys.plot_trajectory()
         sys.animate_simulation()

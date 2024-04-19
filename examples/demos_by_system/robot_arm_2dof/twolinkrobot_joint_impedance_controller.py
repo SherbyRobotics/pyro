@@ -37,3 +37,5 @@ robot_with_joint_pd.x0 = np.array([0,0,0,0])
 robot_with_joint_pd.compute_trajectory( tf )
 robot_with_joint_pd.plot_trajectory('xu')
 robot_with_joint_pd.animate_simulation()
+
+robot_with_joint_pd.plot_linearized_bode()

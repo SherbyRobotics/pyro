@@ -78,7 +78,7 @@ ppo_ctl.plot_control_law(sys=sys, n=100)
 plt.show()
 plt.pause(0.001)
 
-n_time_steps = 2.5E5
+n_time_steps = 2.5E2
 batches = 3
 gym_env.render_mode = None
 for batch in range(batches):

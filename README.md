@@ -1,5 +1,7 @@
 The latest version of this code is now hosted here: https://github.com/SherbyRobotics/pyro
 
+![example workflow](https://github.com/SherbyRobotics/pyro/actions/workflows/python-app.yml/badge.svg)
+
 # Pyro 
 
 An object-based toolbox for robot dynamic simulation, analysis, control and planning. 

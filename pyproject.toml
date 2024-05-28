@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pyro"]
+
+[project]
+name = "pyro_udes"
+version = "2.3"
+authors = [
+  { name="Alexandre Girard", email="alx87grd@gmail.com" },
+  { name="Ian Lalonde", email="lali3401@usherbrooke.ca" },
+]
+description = "object-based toolbox for robot dynamic simulation, analysis, control and planning"
+readme = "README.md"
+requires-python = ">=3.5"
+dependencies =[
+    'numpy>=1.10',
+    'matplotlib>=3.0',
+    'scipy>=1.5.2'
+]
+classifiers=[
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering"
+]
+
+[project.urls]
+Homepage = "https://github.com/SherbyRobotics/pyro/tree/master"

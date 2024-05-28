@@ -40,6 +40,7 @@ output/
 
 # Editor Config #
 .vscode/
+.vs/
 .spyproject/
 .spyderproject/
 

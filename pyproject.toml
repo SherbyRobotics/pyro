@@ -30,3 +30,13 @@ classifiers=[
 
 [project.urls]
 Homepage = "https://github.com/SherbyRobotics/pyro/tree/master"
+
+[tool.pytest.ini_options]
+testpaths = "test"
+addopts = "-v -ra -q"
+log_cli = true
+log_cli_level = "INFO"
+log_format = "%(asctime)s %(levelname)s %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
+minversion = "6.0"
+filterwarnings = "ignore"

@@ -706,23 +706,23 @@ if __name__ == "__main__":
     ### Fully constrained order 3
     #############################
 
-    # ge.x0_N = 2
-    # ge.xf_N = 2
-    # ge.poly_N = 3
-    # ge.diff_N = 7
+    ge.x0_N = 2
+    ge.xf_N = 2
+    ge.poly_N = 3
+    ge.diff_N = 7
 
-    # ge.solve()
+    ge.solve()
 
     #############################
     ### Fully constrained order 5
     #############################
 
-    # ge.x0_N = 3
-    # ge.xf_N = 3
-    # ge.poly_N = 5
-    # ge.diff_N = 7
+    ge.x0_N = 3
+    ge.xf_N = 3
+    ge.poly_N = 5
+    ge.diff_N = 7
 
-    # ge.solve()  # order 5 fully constrained
+    ge.solve()  # order 5 fully constrained
 
     ###########################################
     ### Optimization on polynomial parameters
@@ -742,14 +742,14 @@ if __name__ == "__main__":
     ### Fully constrained order 7
     #############################
 
-    # ge = SingleAxisPolynomialTrajectoryGenerator(
-    #     x0=x0, xf=xf, tf=10, poly_N=7, diff_N=7, dt=0.01
-    # )
+    ge = SingleAxisPolynomialTrajectoryGenerator(
+        x0=x0, xf=xf, tf=10, poly_N=7, diff_N=7, dt=0.01
+    )
 
-    # ge.x0_N = 4
-    # ge.xf_N = 4
+    ge.x0_N = 4
+    ge.xf_N = 4
 
-    # ge.solve()
+    ge.solve()
 
     #############################
     ### Fully constrained order 9
@@ -832,21 +832,21 @@ if __name__ == "__main__":
     ### Waypoint simple fully constraint test
     #############################
 
-    traj = MultiPointSingleAxisPolynomialTrajectoryGenerator(
-        poly_N=9,
-        diff_N=7,
-        con_N=4,
-        x0=np.array([0.0, 0.0, 0.0]),
-        xf=np.array([10.0, 0.0, 0.0]),
-        tc=np.array([0.0, 2.0, 8.0, 10.0]),
-        xc=np.array([[5.0, 12.0]]),
-        dt=0.01,
-    )
+    # traj = MultiPointSingleAxisPolynomialTrajectoryGenerator(
+    #     poly_N=9,
+    #     diff_N=7,
+    #     con_N=4,
+    #     x0=np.array([0.0, 0.0, 0.0]),
+    #     xf=np.array([10.0, 0.0, 0.0]),
+    #     tc=np.array([0.0, 2.0, 8.0, 10.0]),
+    #     xc=np.array([[5.0, 12.0]]),
+    #     dt=0.01,
+    # )
 
-    traj.Ws[0]= 0.01
-    traj.Ws[1]= 1.0
-    traj.Ws[2]= 1.0
-    traj.Ws[3]= 1.0
-    traj.Ws[4]= 1.0
+    # traj.Ws[0]= 0.01
+    # traj.Ws[1]= 1.0
+    # traj.Ws[2]= 1.0
+    # traj.Ws[3]= 1.0
+    # traj.Ws[4]= 1.0
 
-    b, A, p, X, t = traj.solve()
+    # b, A, p, X, t = traj.solve()

@@ -63,13 +63,13 @@ x0_std = np.array([5.0, 5.0, 1.0, 1.0, 1.0, 0.2])
 
 # Demo learning with visual output
 # Create gymnasium environment
-env = sys.convert_to_gymnasium()
-env.render_mode = "human"
-env.reset_mode = "gaussian" 
-env.x0_std = x0_std
-# RL algorithm 
-model2 = PPO("MlpPolicy", env, verbose=1 ) #, tensorboard_log="./tensorboard_log/")
-model2.learn(total_timesteps=100)
+# env = sys.convert_to_gymnasium()
+# env.render_mode = "human"
+# env.reset_mode = "gaussian" 
+# env.x0_std = x0_std
+# # RL algorithm 
+# model2 = PPO("MlpPolicy", env, verbose=1 ) #, tensorboard_log="./tensorboard_log/")
+# model2.learn(total_timesteps=100)
 
 # Headless learning
 # Create gymnasium environment

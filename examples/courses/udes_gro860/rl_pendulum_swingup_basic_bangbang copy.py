@@ -152,7 +152,7 @@ model.save('rl_pendulum_swingup')
 # Animating rl closed-loop
 cl_sys = ppo_ctl + sys
 
-cl_sys.x0 = np.array([-2.2, -0.0])
+cl_sys.x0 = np.array([-3.2, -0.0])
 cl_sys.compute_trajectory(tf=10.0, n=10000, solver="euler")
 cl_sys.plot_trajectory("xu")
 cl_sys.animate_simulation()

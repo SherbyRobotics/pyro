@@ -8,7 +8,7 @@ Created on Fri Aug 07 11:51:55 2015
 ###############################################################################
 import numpy as np
 from copy import copy
-from scipy.integrate import cumtrapz
+from scipy.integrate import cumulative_trapezoid
 ###############################################################################
 
 
@@ -85,7 +85,7 @@ class CostFunction():
             t = traj.t[i]
             dJ[i] = self.g( x, u, t)
 
-        J = cumtrapz(y=dJ, x=traj.t, initial=0)
+        J = cumulative_trapezoid(y=dJ, x=traj.t, initial=0)
 
         new_traj = copy(traj)
         new_traj.J = J

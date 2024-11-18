@@ -32,26 +32,26 @@ grid_sys = discretizer.GridDynamicSystem( sys , [201,201] , [3] )
 # Cost Function
 tcf = costfunction.TimeCostFunction( np.array([0.0,0.0]) ) 
 tcf.INF = 10.0
-tcf.EPS = 0.01
+tcf.EPS = 0.0001
 
 
 # DP algo
 dp = dynamicprogramming.DynamicProgrammingWithLookUpTable( grid_sys, tcf)
 
-dp.solve_bellman_equation( tol = 0.01 )
+dp.solve_bellman_equation( tol = 0.0001 )
 
 
 dp.clean_infeasible_set()
 dp.plot_cost2go_3D()
 dp.plot_policy()
 
-ctl = dp.get_lookup_table_controller()
+# ctl = dp.get_lookup_table_controller()
 
 
-#asign controller
-cl_sys = ctl + sys
-cl_sys.x0   = np.array([1.2, 0.])
-cl_sys.compute_trajectory( 10, 10001, 'euler')
-cl_sys.plot_trajectory('xu')
-cl_sys.plot_phase_plane_trajectory()
-cl_sys.animate_simulation()
+# #asign controller
+# cl_sys = ctl + sys
+# cl_sys.x0   = np.array([1.2, 0.])
+# cl_sys.compute_trajectory( 10, 10001, 'euler')
+# cl_sys.plot_trajectory('xu')
+# cl_sys.plot_phase_plane_trajectory()
+# cl_sys.animate_simulation()

@@ -60,13 +60,24 @@ class CustomController( controller.StaticController ) :
         
         u = - 0.5 * position - 0.5 * velocity
 
+        # if (position<0):
+        #     if ( velocity < np.sqrt(-2*position) ):
+        #         u = 1
+        #     else:
+        #         u = -1
+        # if (position>0):
+        #     if ( velocity < -np.sqrt(2*position) ):
+        #         u = +1
+        #     else:
+        #         u = -1
+
         u = np.clip(u,-1.0,1.0)
 
         return np.array([u])
 
 ctl = CustomController()
 
-ctl.plot_control_law( sys = sys )
+ctl.plot_control_law( sys = sys , n = 100 )
 
 # DP algo
 

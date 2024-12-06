@@ -34,9 +34,16 @@ except:
     
     except:
 
-        print('Warning: Could not load validated backend mode for matplotlib')
-        print('Matplotlib list of interactive backends:', matplotlib.rcsetup.interactive_bk)
-        plt.ion() # Set interactive mode
+        try:
+            # For MacOSX
+            matplotlib.use('macosx')
+            plt.ion()
+
+        except:
+            
+            print('Warning: Could not load validated backend mode for matplotlib')
+            print('Matplotlib list of interactive backends:', matplotlib.rcsetup.interactive_bk)
+            plt.ion() # Set interactive mode
 
 
 # Default figure settings

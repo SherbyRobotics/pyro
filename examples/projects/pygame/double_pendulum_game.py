@@ -12,11 +12,19 @@ running = True
 dt = clock.tick(60) / 1000
 dt = clock.tick(60) / 1000
 
+#define font
+font_size = 30
+font = pygame.font.SysFont("Futura", 30)
+
 ##############################################################################
 import numpy as np
 ##############################################################################
 from pyro.dynamic  import pendulum
 from pyro.kinematic import drawing
+from pyro.dynamic  import pendulum
+from pyro.control  import nonlinear
+from pyro.analysis import simulation
+from pyro.planning.trajectoryoptimisation import DirectCollocationTrajectoryOptimisation
 ##############################################################################
 
 # Dynamic system
@@ -29,9 +37,39 @@ sys.d2 = 0.2
 
 x = sys.x0
 t = 0.0
+score = 0.0
+last_score = 0.0
+high_score = -100000.0
 
 x[0] = -np.pi
 
+#Planner
+
+#Max/Min torque
+sys.u_ub[0] = +20
+sys.u_ub[1] = +20
+sys.u_lb[0] = -20
+sys.u_lb[1] = -20
+
+sys.cost_function.Q[0,0] = 100.0
+sys.cost_function.Q[0,0] = 100.0
+sys.cost_function.R[0,0] = 10.0
+sys.cost_function.R[0,0] = 10.0
+
+planner = DirectCollocationTrajectoryOptimisation( sys , 0.2 , 20 )
+
+planner.x_start = x
+planner.x_goal  = np.array([0,0,0,0])
+
+planner.maxiter = 500
+planner.set_linear_initial_guest(True)
+planner.compute_optimal_trajectory()
+
+# Controller
+ctl  = nonlinear.ComputedTorqueController( sys , planner.traj )
+ctl.rbar = np.array([0,0])
+ctl.w0   = 5
+ctl.zeta = 1
 
 
 def px_T( domain , width = 800 , height = 800 , x_axis = 0, y_axis = 1):
@@ -99,6 +137,16 @@ while running:
     else:
         u[0] = 0.0
         # vert_move = joystick.get_axis(1)
+
+    # reset
+    if t > 10.01:
+        last_score = score
+        high_score = max(high_score,last_score)
+        score = 0.0
+        x = sys.x0
+        x[0] = -np.pi
+        # x = x + np.
+        t = 0.0
     
     if keys[pygame.K_w]:
         u[1] = sys.u_ub[1] * 0.5
@@ -108,17 +156,37 @@ while running:
         u[1] = 0.0
 
     for joy in joysticks:
-        u[0] = joy.get_axis(0) * ( sys.u_ub[0] - sys.u_lb[0] ) * 0.5
-        u[1] = joy.get_axis(2) * ( sys.u_ub[1] - sys.u_lb[1] ) * 0.5
+        u[0] = joy.get_axis(1) * ( sys.u_ub[0] - sys.u_lb[0] ) * 0.5
+        u[1] = joy.get_axis(3) * ( sys.u_ub[1] - sys.u_lb[1] ) * 0.5
+
+        if joy.get_button(0):
+            u = ctl.c( x , ctl.rbar, t )
+
+    if keys[pygame.K_o]:
+        u = ctl.c( x , ctl.rbar, t )
 
     # Dynamic
     x = sys.x_next( x , u , t , dt )
+    score = score - sys.cost_function.g( x , u , t ) * dt / 100
     t = t + dt
 
     # Kinematic
     q = sys.xut2q( x , u , 0 )
 
-    print('x:',x,'u:,',u, 'dt:',dt, 't:',t)
+    print('x:',x,'u:,',u, 'dt:', dt, 't:',t)
+    print('score: %.2f' % score)
+
+    img = font.render( 'Score: %.2f' % score, True, (0, 0, 0))
+    screen.blit(img, (0,0))
+
+    img = font.render( 'Last score: %.2f' % last_score, True, (0, 0, 0))
+    screen.blit(img, (0,40))
+
+    img = font.render( 'High score: %.2f' % high_score, True, (0, 0, 0))
+    screen.blit(img, (0,80))
+
+    img = font.render( 't= %.2f' % t, True, (0, 0, 0))
+    screen.blit(img, (0,120))
 
     # Graphical
     lines, _ , _ = sys.forward_kinematic_lines( q )

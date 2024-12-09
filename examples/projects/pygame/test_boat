@@ -68,9 +68,6 @@ def line2pygame( line , T ):
 
 
 
-
-
-
 while running:
     # poll for events
     # pygame.QUIT event means the user clicked X to close your window
@@ -91,9 +88,9 @@ while running:
         u[0] = 0.0
     
     if keys[pygame.K_w]:
-        u[1] = sys.u_ub[1] * 0.5
+        u[1] = sys.u_ub[1] * 1.0
     elif keys[pygame.K_s]:
-        u[1] = sys.u_lb[1] * 0.5
+        u[1] = sys.u_lb[1] * 1.0
     else:
         u[1] = 0.0
 

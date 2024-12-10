@@ -19,7 +19,7 @@ font = pygame.font.SysFont("Futura", 30)
 ##############################################################################
 import numpy as np
 ##############################################################################
-from pyro.dynamic  import pendulum
+from pyro.dynamic  import boat
 from pyro.kinematic import drawing
 from pyro.dynamic  import pendulum
 from pyro.control  import nonlinear
@@ -28,13 +28,10 @@ from pyro.planning.trajectoryoptimisation import DirectCollocationTrajectoryOpti
 ##############################################################################
 
 # Dynamic system
-sys  = pendulum.DoublePendulum()
+sys  = boat.Boat2D()
 
-
-sys.d1 = 0.2
-sys.d2 = 0.2
-sys.I1 = 2.0
-sys.I2 = 2.0
+sys.mass = 1000.
+sys.inertia = 1000.
 
 
 x = sys.x0
@@ -43,35 +40,36 @@ score = 0.0
 last_score = 0.0
 high_score = -100000.0
 
-x[0] = -np.pi
+x[0] = -5
+x[1] = -5
 
 #Planner
 
-#Max/Min torque
-sys.u_ub[0] = +20
-sys.u_ub[1] = +20
-sys.u_lb[0] = -20
-sys.u_lb[1] = -20
+# #Max/Min torque
+# sys.u_ub[0] = +20
+# sys.u_ub[1] = +20
+# sys.u_lb[0] = -20
+# sys.u_lb[1] = -20
 
 sys.cost_function.Q[0,0] = 100.0
 sys.cost_function.Q[0,0] = 100.0
 sys.cost_function.R[0,0] = 10.0
 sys.cost_function.R[0,0] = 10.0
 
-planner = DirectCollocationTrajectoryOptimisation( sys , 0.2 , 20 )
+# planner = DirectCollocationTrajectoryOptimisation( sys , 0.2 , 20 )
 
-planner.x_start = x
-planner.x_goal  = np.array([0,0,0,0])
+# planner.x_start = x
+# planner.x_goal  = np.array([0,0,0,0])
 
-planner.maxiter = 500
-planner.set_linear_initial_guest(True)
-planner.compute_optimal_trajectory()
+# planner.maxiter = 500
+# planner.set_linear_initial_guest(True)
+# planner.compute_optimal_trajectory()
 
-# Controller
-ctl  = nonlinear.ComputedTorqueController( sys , planner.traj )
-ctl.rbar = np.array([0,0])
-ctl.w0   = 5
-ctl.zeta = 1
+# # Controller
+# ctl  = nonlinear.ComputedTorqueController( sys , planner.traj )
+# ctl.rbar = np.array([0,0])
+# ctl.w0   = 5
+# ctl.zeta = 1
 
 
 def px_T( domain , width = 800 , height = 800 , x_axis = 0, y_axis = 1):
@@ -152,9 +150,9 @@ while running:
         t = 0.0
     
     if keys[pygame.K_w]:
-        u[1] = sys.u_ub[1] * 0.5
+        u[1] = sys.u_ub[1] * 1.0
     elif keys[pygame.K_s]:
-        u[1] = sys.u_lb[1] * 0.5
+        u[1] = sys.u_lb[1] * 1.0
     else:
         u[1] = 0.0
 
@@ -162,11 +160,11 @@ while running:
         u[0] = joy.get_axis(1) * ( sys.u_ub[0] - sys.u_lb[0] ) * 0.5
         u[1] = joy.get_axis(3) * ( sys.u_ub[1] - sys.u_lb[1] ) * 0.5
 
-        if joy.get_button(0):
-            u = ctl.c( x , ctl.rbar, t )
+        # if joy.get_button(0):
+        #     u = ctl.c( x , ctl.rbar, t )
 
-    if keys[pygame.K_o]:
-        u = ctl.c( x , ctl.rbar, t )
+    # if keys[pygame.K_o]:
+    #     u = ctl.c( x , ctl.rbar, t )
 
     # Dynamic
     x = sys.x_next( x , u , t , dt )
@@ -196,18 +194,10 @@ while running:
 
     domain = sys.forward_kinematic_domain( q )
 
-    body = lines[1]
+    body = lines[0]
 
 
     T = px_T( domain )
-
-    xyz = np.array([ body[1,0] , body[1,1] , 1.0 ])
-    px = T @ xyz
-    pygame.draw.circle(screen, 'blue', px[0:2], 20)
-
-    xyz = np.array([ body[2,0] , body[2,1] , 1.0 ])
-    px = T @ xyz
-    pygame.draw.circle(screen, 'blue', px[0:2], 20)
 
     body_px = line2pygame( body , T )
     pygame.draw.lines( screen, 'blue',False, body_px , width = 5  )
@@ -216,22 +206,6 @@ while running:
     if force.shape[0] > 2:
         force_px = line2pygame( force , T )
         pygame.draw.aalines( screen, 'red',False, force_px ) #, width = 3 )
-
-    force = sys.forward_kinematic_lines_plus(x,u,0)[0][1]
-    if force.shape[0] > 2:
-        force_px = line2pygame( force , T )
-        pygame.draw.aalines( screen, 'red',False, force_px ) #, width = 3 )
-
-    force = sys.forward_kinematic_lines_plus(x,u,0)[0][2]
-    if force.shape[0] > 2:
-        force_px = line2pygame( force , T )
-        pygame.draw.aalines( screen, 'red',False, force_px ) #, width = 3 )
-
-    force = sys.forward_kinematic_lines_plus(x,u,0)[0][3]
-    if force.shape[0] > 2:
-        force_px = line2pygame( force , T )
-        pygame.draw.aalines( screen, 'red',False, force_px ) #, width = 3 )
-
 
     # flip() the display to put your work on screen
     pygame.display.flip()

@@ -8,7 +8,7 @@ from pyro.kinematic import drawing
 ##############################################################################
 
 
-###############################################################################
+##############################################w#################################
 class InteractiveContinuousDynamicSystem:
 
     ############################
@@ -42,7 +42,7 @@ class InteractiveContinuousDynamicSystem:
         self.y = sys.h(self.x, self.u, self.t)
 
     ############################
-    def reset_score(self, last_score=0.0):
+    def reset_score(self, last_score=-np.inf):
 
         self.score = 0.0
         self.last_score = last_score
@@ -159,16 +159,17 @@ class InteractiveContinuousDynamicSystem:
 
             t = self.t
             y = self.y
+            r = self.ctl.rbar
 
             if joy.get_button(0):
-                u = self.ctl.c(x, self.ctl.rbar, t)
+                u = self.ctl.c(y, r, t)
                 u = np.clip(u, sys.u_lb, sys.u_ub)
 
             if joy.get_button(1):
-                u = self.ctl.c(x, self.ctl.rbar, t)
+                u = self.ctl.c(y, r, t)
 
             if keys[pygame.K_o]:
-                u = self.ctl.c(x, self.ctl.rbar, t)
+                u = self.ctl.c(y, r, t)
 
         # Update sys inputs
         self.u = u
@@ -222,16 +223,19 @@ class InteractiveContinuousDynamicSystem:
             T = self.px_T(domain)
 
             for line in lines:
-                line_px = self.line2pygame(line, T)
-                pygame.draw.lines(
-                    self.screen, "blue", False, line_px, width=self.linewidth
-                )
+                if line.shape[0] > 1:
+                    line_px = self.line2pygame(line, T)
+                    pygame.draw.lines(
+                        self.screen, "blue", False, line_px, width=self.linewidth
+                    )
 
-                if self.dot_size > 0:
-                    for i in range(line.shape[0]):
-                        xyz = np.array([line[i, 0], line[i, 1], 1.0])
-                        px = T @ xyz
-                        pygame.draw.circle(self.screen, "blue", px[0:2], self.dot_size)
+                    if self.dot_size > 0:
+                        for i in range(line.shape[0]):
+                            xyz = np.array([line[i, 0], line[i, 1], 1.0])
+                            px = T @ xyz
+                            pygame.draw.circle(
+                                self.screen, "blue", px[0:2], self.dot_size
+                            )
 
             # Lines plus
             forces = sys.forward_kinematic_lines_plus(self.x, self.u, self.t)[0]
@@ -262,7 +266,7 @@ class InteractiveContinuousDynamicSystem:
         scale = min(x_scale, y_scale)
 
         x_offset = 0.5 * width - x_center * scale
-        y_offset = 0.5 * height - y_center * scale
+        y_offset = 0.5 * height + y_center * scale
 
         T = np.array([[scale, 0, x_offset], [0, -scale, y_offset], [0, 0, 1]])
 
@@ -288,9 +292,30 @@ if __name__ == "__main__":
     """MAIN TEST"""
 
     from pyro.dynamic import pendulum
+    from pyro.dynamic import drone
+    from pyro.dynamic import boat
+    from pyro.dynamic import vehicle_steering
+    from pyro.dynamic import rocket
+    from pyro.dynamic import mountaincar
+    from pyro.dynamic import massspringdamper
+    from pyro.dynamic import plane
 
     sys = pendulum.DoublePendulum()
+    sys = drone.Drone2D()
+    sys = pendulum.SinglePendulum()
+    sys = boat.Boat2D()
+    # sys = vehicle_steering.KinematicCarModelwithObstacles() # bug?
+    sys = rocket.Rocket()
+    sys = mountaincar.MountainCar()
+    sys = massspringdamper.ThreeMass()
+    sys = plane.Plane2D()
+
+    # sys.x0[0] = -np.pi
+
+    sys.inertia = 10.0
 
     game = InteractiveContinuousDynamicSystem(sys)
+
+    game.dot_size = 1.0
 
     game.run(debug=True)

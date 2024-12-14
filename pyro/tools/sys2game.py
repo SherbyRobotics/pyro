@@ -18,7 +18,7 @@ class InteractiveContinuousDynamicSystem:
         self.dt = dt
         self.tf = tf
 
-        self.ctl = None
+        self.ctl = ctl
         self.renderer = renderer
 
         # Parameters
@@ -36,10 +36,10 @@ class InteractiveContinuousDynamicSystem:
     ############################
     def reset_memory(self, t=0.0):
 
-        self.x = sys.x0
+        self.x = self.sys.x0
         self.t = t
-        self.u = sys.ubar
-        self.y = sys.h(self.x, self.u, self.t)
+        self.u = self.sys.ubar
+        self.y = self.sys.h(self.x, self.u, self.t)
 
     ############################
     def reset_score(self, last_score=-np.inf):
@@ -110,37 +110,37 @@ class InteractiveContinuousDynamicSystem:
 
         keys = pygame.key.get_pressed()
 
-        for j in range(sys.ubar.shape[0]):
+        for j in range(self.sys.ubar.shape[0]):
 
             if j == 0:
                 if keys[pygame.K_a]:
-                    u[0] = sys.u_ub[0] * self.input_scale
+                    u[0] = self.sys.u_ub[0] * self.input_scale
                 elif keys[pygame.K_d]:
-                    u[0] = sys.u_lb[0] * self.input_scale
+                    u[0] = self.sys.u_lb[0] * self.input_scale
                 else:
                     u[0] = 0.0
 
             if j == 1:
                 if keys[pygame.K_w]:
-                    u[1] = sys.u_ub[1] * self.input_scale
+                    u[1] = self.sys.u_ub[1] * self.input_scale
                 elif keys[pygame.K_s]:
-                    u[1] = sys.u_lb[1] * self.input_scale
+                    u[1] = self.sys.u_lb[1] * self.input_scale
                 else:
                     u[1] = 0.0
 
             if j == 2:
                 if keys[pygame.K_o]:
-                    u[2] = sys.u_ub[2] * self.input_scale
+                    u[2] = self.sys.u_ub[2] * self.input_scale
                 elif keys[pygame.K_l]:
-                    u[2] = sys.u_lb[2] * self.input_scale
+                    u[2] = self.sys.u_lb[2] * self.input_scale
                 else:
                     u[2] = 0.0
 
             if j == 3:
                 if keys[pygame.K_i]:
-                    u[3] = sys.u_ub[3] * self.input_scale
+                    u[3] = self.sys.u_ub[3] * self.input_scale
                 elif keys[pygame.K_k]:
-                    u[3] = sys.u_lb[3] * self.input_scale
+                    u[3] = self.sys.u_lb[3] * self.input_scale
                 else:
                     u[3] = 0.0
 
@@ -150,9 +150,9 @@ class InteractiveContinuousDynamicSystem:
             # Stop button
             self.stop = joy.get_button(3)
 
-            for j in sys.ubar.shape[0]:
+            for j in self.sys.ubar.shape[0]:
                 input = self.input_axis_mapping[j]
-                u[j] = input * (sys.u_ub[j] - sys.u_lb[j]) * self.input_scale
+                u[j] = input * (sys.u_ub[j] - self.sys.u_lb[j]) * self.input_scale
 
         # Automatic modes
         if self.ctl is not None:
@@ -161,12 +161,14 @@ class InteractiveContinuousDynamicSystem:
             y = self.y
             r = self.ctl.rbar
 
-            if joy.get_button(0):
-                u = self.ctl.c(y, r, t)
-                u = np.clip(u, sys.u_lb, sys.u_ub)
+            # Joystick inputs
+            for joy in self.joysticks:
+                if joy.get_button(0):
+                    u = self.ctl.c(y, r, t)
+                    u = np.clip(u, self.sys.u_lb, self.sys.u_ub)
 
-            if joy.get_button(1):
-                u = self.ctl.c(y, r, t)
+                if joy.get_button(1):
+                    u = self.ctl.c(y, r, t)
 
             if keys[pygame.K_o]:
                 u = self.ctl.c(y, r, t)
@@ -238,7 +240,7 @@ class InteractiveContinuousDynamicSystem:
                             )
 
             # Lines plus
-            forces = sys.forward_kinematic_lines_plus(self.x, self.u, self.t)[0]
+            forces = self.sys.forward_kinematic_lines_plus(self.x, self.u, self.t)[0]
 
             for force in forces:
                 if force.shape[0] > 2:

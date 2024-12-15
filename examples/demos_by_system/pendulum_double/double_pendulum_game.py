@@ -32,22 +32,18 @@ sys.cost_function.Q[0, 0] = 100.0
 sys.cost_function.R[0, 0] = 10.0
 sys.cost_function.R[0, 0] = 10.0
 
-# planner = DirectCollocationTrajectoryOptimisation(sys, 0.2, 20)
-
-planner.x_start = x
+# Controller
+planner = DirectCollocationTrajectoryOptimisation(sys, 0.2, 20)
+planner.x_start = sys.x0
 planner.x_goal = np.array([0, 0, 0, 0])
-
 planner.maxiter = 500
 planner.set_linear_initial_guest(True)
 planner.compute_optimal_trajectory()
 
-# planner.show_solution()
-
-# Controller
 ctl = nonlinear.ComputedTorqueController(sys, planner.traj)
 ctl.rbar = np.array([0, 0])
 ctl.w0 = 5
 ctl.zeta = 1
 
 
-game = sys.convert_to_pygame()
+game = sys.convert_to_pygame( tf=10.0, dt=0.01, ctl=ctl, renderer="pygame" )

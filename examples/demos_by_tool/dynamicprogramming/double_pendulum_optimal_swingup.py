@@ -16,22 +16,24 @@ from pyro.planning import discretizer
 
 sys = pendulum.DoublePendulum()
 
-sys.x_ub[0] = +1.0
+sys.x_ub[0] = +0.5
 sys.x_lb[0] = -5.0
-sys.x_ub[2] = +5.0
-sys.x_lb[2] = -5.0
-sys.x_ub[1] = +1.0
-sys.x_lb[1] = -5.0
-sys.x_ub[3] = +5.0
-sys.x_lb[3] = -5.0
+sys.x_ub[1] = +4.0
+sys.x_lb[1] = -1.5
 
-sys.u_ub[0] = +10.0
-sys.u_lb[0] = -10.0
-sys.u_ub[1] = +10.0
-sys.u_lb[1] = -10.0
+sys.x_ub[2] = +5.5
+sys.x_lb[2] = -4.0
+sys.x_ub[3] = +7.0
+sys.x_lb[3] = -4.0
+
+sys.u_ub[0] = +12.0
+sys.u_lb[0] = -12.0
+
+sys.u_ub[1] = +12.0
+sys.u_lb[1] = -12.0
 
 # Discrete world
-grid_sys = discretizer.GridDynamicSystem(sys, [51, 31, 51, 31], [3, 3], dt=0.1)
+grid_sys = discretizer.GridDynamicSystem(sys, [51, 41, 51, 41], [5, 5], dt=0.1)
 
 # Cost Function
 qcf = costfunction.QuadraticCostFunction.from_sys(sys)
@@ -39,13 +41,13 @@ qcf = costfunction.QuadraticCostFunction.from_sys(sys)
 qcf.xbar = np.array([0, 0, 0, 0])  # target
 
 qcf.Q[0, 0] = 1.0
-qcf.Q[1, 1] = 1.0
+qcf.Q[1, 1] = 0.5
 qcf.Q[2, 2] = 0.1
-qcf.Q[3, 3] = 0.1
-qcf.R[0, 0] = 0.01
-qcf.R[1, 1] = 0.01
+qcf.Q[3, 3] = 0.05
+qcf.R[0, 0] = 0.05
+qcf.R[1, 1] = 0.05
 
-qcf.INF = 3000
+qcf.INF = 1000
 qcf.EPS = 1.0
 
 tcf = costfunction.TimeCostFunction(np.array([0, 0, 0, 0]))
@@ -57,9 +59,11 @@ tcf.EPS = 0.5
 dp = dynamicprogramming.DynamicProgrammingWithLookUpTable(grid_sys, qcf)
 
 # dp.solve_bellman_equation(tol=1.0)
-dp.compute_steps(100)
+dp.compute_steps(50)
 
 dp.plot_cost2go()
+dp.plot_cost2go(100, 1, 3)
+dp.plot_cost2go(100, 0, 2)
 dp.plot_policy()
 
 
@@ -70,8 +74,8 @@ cl_sys = controller.ClosedLoopSystem(sys, ctl)
 ##############################################################################
 
 # Simulation and animation
-cl_sys.x0 = np.array([-np.pi, 0, 0, 0])
-cl_sys.compute_trajectory(30, 10001, "euler")
+cl_sys.x0 = np.array([-np.pi, 1.0, 0, 0])
+cl_sys.compute_trajectory(8, 4001, "euler")
 cl_sys.plot_trajectory("xu")
 cl_sys.plot_phase_plane_trajectory()
 cl_sys.animate_simulation()

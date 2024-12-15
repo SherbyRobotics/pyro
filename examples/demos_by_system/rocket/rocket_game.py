@@ -16,6 +16,9 @@ from pyro.control.lqr import synthesize_lqr_controller
 
 # Non-linear model
 sys = Rocket()
+sys.u_ub = np.array([2.0, 0.8]) * sys.mass * sys.gravity
+sys.u_lb = np.array([0.0, -0.8]) * sys.mass * sys.gravity
+sys.x0 = np.array([0.1,10,-0.1,0,0,0])
 
 sys.inertia = 400
 
@@ -39,11 +42,5 @@ cf.R[1, 1] = 10.0
 # LQR controller
 ctl = synthesize_lqr_controller(ss, cf, sys.xbar, sys.ubar)
 
-ctl.ubar
-
 # Simulation Closed-Loop Non-linear with LQR controller
-cl_sys = ctl + sys
-cl_sys.x0 = np.array([1, 10, -0.8, 0, 0, 0])
-cl_sys.compute_trajectory(10)
-cl_sys.plot_trajectory("xu")
-cl_sys.animate_simulation()
+game = sys.convert_to_pygame(tf=10.0, dt=0.01, ctl=ctl, renderer="pygame")

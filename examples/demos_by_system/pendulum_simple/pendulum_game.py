@@ -52,9 +52,5 @@ dp.plot_policy()
 ctl = dp.get_lookup_table_controller()
 
 # Simulation
-cl_sys = ctl + sys
-cl_sys.x0 = np.array([0.0, 0.0])
-cl_sys.compute_trajectory(10, 10001, "euler")
-cl_sys.plot_trajectory("xu")
-cl_sys.plot_phase_plane_trajectory()
-cl_sys.animate_simulation()
+
+game = sys.convert_to_pygame( tf=10.0, dt=0.01, ctl=ctl, renderer="pygame" )

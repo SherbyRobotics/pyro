@@ -33,7 +33,10 @@ sys.u_ub[1] = +12.0
 sys.u_lb[1] = -12.0
 
 # Discrete world
-grid_sys = discretizer.GridDynamicSystem(sys, [51, 41, 51, 41], [5, 5], dt=0.1)
+pi = np.load("double_pendulum_51_41_51_41_5_5_pi_inf.npy")
+grid_sys = discretizer.GridDynamicSystem(
+    sys, [51, 41, 51, 41], [5, 5], dt=0.1, lookup=False
+)
 
 # Cost Function
 qcf = costfunction.QuadraticCostFunction.from_sys(sys)
@@ -50,31 +53,17 @@ qcf.R[1, 1] = 0.05
 qcf.INF = 1000
 qcf.EPS = 1.0
 
-tcf = costfunction.TimeCostFunction(np.array([0, 0, 0, 0]))
-tcf.EPS = 0.5
-
-
 # DP algo
 
-dp = dynamicprogramming.DynamicProgrammingWithLookUpTable(grid_sys, qcf)
-
-# dp.solve_bellman_equation(tol=1.0)
-dp.compute_steps(50)
-
-dp.plot_cost2go()
-dp.plot_cost2go(100, 1, 3)
-dp.plot_cost2go(100, 0, 2)
-dp.plot_policy()
-
+ctl = dynamicprogramming.LookUpTableController(grid_sys, pi)
 
 # asign controller
-ctl = dp.get_lookup_table_controller()
 cl_sys = controller.ClosedLoopSystem(sys, ctl)
 
 ##############################################################################
 
 # Simulation and animation
-cl_sys.x0 = np.array([-np.pi, 1.0, 0, 0])
+cl_sys.x0 = np.array([-np.pi, 0.0, 0, 0])
 cl_sys.compute_trajectory(8, 4001, "euler")
 cl_sys.plot_trajectory("xu")
 cl_sys.plot_phase_plane_trajectory()

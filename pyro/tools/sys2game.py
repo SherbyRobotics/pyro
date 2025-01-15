@@ -302,15 +302,15 @@ if __name__ == "__main__":
     from pyro.dynamic import massspringdamper
     from pyro.dynamic import plane
 
-    sys = pendulum.DoublePendulum()
-    sys = drone.Drone2D()
+    # sys = pendulum.DoublePendulum()
+    # sys = drone.Drone2D()
     sys = pendulum.SinglePendulum()
-    sys = boat.Boat2D()
+    # sys = boat.Boat2D()
     # sys = vehicle_steering.KinematicCarModelwithObstacles() # bug?
-    sys = rocket.Rocket()
-    sys = mountaincar.MountainCar()
-    sys = massspringdamper.ThreeMass()
-    sys = plane.Plane2D()
+    # sys = rocket.Rocket()
+    # sys = mountaincar.MountainCar()
+    # sys = massspringdamper.ThreeMass()
+    # sys = plane.Plane2D()
 
     # sys.x0[0] = -np.pi
 

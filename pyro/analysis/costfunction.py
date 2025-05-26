@@ -8,7 +8,7 @@ Created on Fri Aug 07 11:51:55 2015
 ###############################################################################
 import numpy as np
 from copy import copy
-from scipy.integrate import cumtrapz
+from scipy.integrate import cumulative_trapezoid as cumtrapz
 ###############################################################################
 
 

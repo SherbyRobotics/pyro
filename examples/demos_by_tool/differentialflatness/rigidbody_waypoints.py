@@ -12,29 +12,27 @@ from pyro.planning import plan
 
 ###############################################################################
 # Waypoints
-xyt = np.array([[ 0.0,  0.0, 0.0],
-                [10.0,  0.0, 5.0], 
-                [10.0, 10.0, 10.0], 
-                [ 0.0, 10.0, 15.0]]).T
-
+xyt = np.array(
+    [[0.0, 0.0, 0.0], [20.0, 0.0, 5.0], [10.0, 10.0, 10.0], [0.0, 10.0, 15.0]]
+).T
 
 
 xtraj = trajectorygeneration.MultiPointSingleAxisPolynomialTrajectoryGenerator(
-        poly_N=9,
-        diff_N=7,
-        con_N=4,
-        x0=np.array([xyt[0,0], 0.0, 0.0, 0.0]),
-        xf=np.array([xyt[0,3], 0.0, 0.0, 0.0]),
-        tc=np.array([xyt[2,0], xyt[2,1], xyt[2,2], xyt[2,3]]),
-        xc=np.array([[xyt[0,1], xyt[0,2]]]),
-        dt=0.01,
-    )
+    poly_N=9,
+    diff_N=7,
+    con_N=4,
+    x0=np.array([xyt[0, 0], 0.0, 0.0, 0.0]),
+    xf=np.array([xyt[0, 3], 0.0, 0.0, 0.0]),
+    tc=np.array([xyt[2, 0], xyt[2, 1], xyt[2, 2], xyt[2, 3]]),
+    xc=np.array([[xyt[0, 1], xyt[0, 2]]]),
+    dt=0.01,
+)
 
-xtraj.Ws[0]= 0.01
-xtraj.Ws[1]= 1.0
-xtraj.Ws[2]= 1.0
-xtraj.Ws[3]= 1.0
-xtraj.Ws[4]= 1.0
+xtraj.Ws[0] = 0.01
+xtraj.Ws[1] = 1.0
+xtraj.Ws[2] = 1.0
+xtraj.Ws[3] = 1.0
+xtraj.Ws[4] = 1.0
 
 b, A, p, X, t = xtraj.solve()
 
@@ -45,21 +43,21 @@ dax = X[3, :]
 ddax = X[4, :]
 
 ytraj = trajectorygeneration.MultiPointSingleAxisPolynomialTrajectoryGenerator(
-        poly_N=9,
-        diff_N=7,
-        con_N=4,
-        x0=np.array([xyt[1,0], 0.0, 0.0, 0.0]),
-        xf=np.array([xyt[1,3], 0.0, 0.0, 0.0]),
-        tc=np.array([xyt[2,0], xyt[2,1], xyt[2,2], xyt[2,3]]),
-        xc=np.array([[xyt[1,1], xyt[1,2]]]),
-        dt=0.01,
-    )
+    poly_N=9,
+    diff_N=7,
+    con_N=4,
+    x0=np.array([xyt[1, 0], 0.0, 0.0, 0.0]),
+    xf=np.array([xyt[1, 3], 0.0, 0.0, 0.0]),
+    tc=np.array([xyt[2, 0], xyt[2, 1], xyt[2, 2], xyt[2, 3]]),
+    xc=np.array([[xyt[1, 1], xyt[1, 2]]]),
+    dt=0.01,
+)
 
-ytraj.Ws[0]= 0.01
-ytraj.Ws[1]= 1.0
-ytraj.Ws[2]= 1.0
-ytraj.Ws[3]= 1.0
-ytraj.Ws[4]= 1.0
+ytraj.Ws[0] = 0.01
+ytraj.Ws[1] = 1.0
+ytraj.Ws[2] = 1.0
+ytraj.Ws[3] = 1.0
+ytraj.Ws[4] = 1.0
 
 b, A, p, Y, t = ytraj.solve()
 
@@ -74,7 +72,9 @@ theta = np.arctan2(ay, ax)
 # theta = np.arctan( (ay/ax))
 s = np.sin(theta)
 c = np.cos(theta)
-dtheta = (day * c - dax * s) / (ay * s + ax * c)  # TODO check analytical equation, seems wrong
+dtheta = (day * c - dax * s) / (
+    ay * s + ax * c
+)  # TODO check analytical equation, seems wrong
 ddtheta = (
     s * (-ddax + ax * dtheta**2 - 2 * day * dtheta)
     + c * (dday - ay * dtheta**2 - 2 * dax * dtheta)

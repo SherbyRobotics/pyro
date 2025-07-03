@@ -251,10 +251,10 @@ cl_sys = ctl + sys
 
 ctl.position_control_isactivated = True
 
-cl_sys.x0 = np.array([3, 3, 1.0, 5, 0, 0])
-cl_sys.compute_trajectory(20)
-cl_sys.plot_trajectory("xu")
-cl_sys.animate_simulation(time_factor_video=1.0)
+# cl_sys.x0 = np.array([3, 3, 1.0, 5, 0, 0])
+# cl_sys.compute_trajectory(20)
+# cl_sys.plot_trajectory("xu")
+# cl_sys.animate_simulation(time_factor_video=1.0)
 
 # cl_sys.x0 = np.array([-20,10,-2.5,0,0,0])
 # cl_sys.compute_trajectory(30)
@@ -270,9 +270,9 @@ cl_sys.animate_simulation(time_factor_video=1.0)
 # # Test trajectory following control
 # ################################
 
-# ctl.trajectory_following_isactivated = True
+ctl.trajectory_following_isactivated = True
 
-# cl_sys.x0 = np.array([0,0,0,0,0,0])
-# cl_sys.compute_trajectory(60)
-# cl_sys.plot_trajectory('xu')
-# cl_sys.animate_simulation( time_factor_video = 1.0 )
+cl_sys.x0 = np.array([0, 0, 0, 0, 0, 0])
+cl_sys.compute_trajectory(60)
+cl_sys.plot_trajectory("xu")
+cl_sys.animate_simulation(time_factor_video=1.0)

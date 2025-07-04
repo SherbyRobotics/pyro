@@ -767,7 +767,7 @@ class Animator:
             )
         else:
             self.ani_ax = self.ani_fig.add_subplot(111, autoscale_on=True)
-            self.ani_ax.axis("equal")
+            # self.ani_ax.axis("equal")
             self.ani_ax.set_xlim(self.ani_domains[0][self.x_axis])
             self.ani_ax.set_ylim(self.ani_domains[0][self.y_axis])
             self.ani_fig.canvas.manager.set_window_title(

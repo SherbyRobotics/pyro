@@ -227,6 +227,11 @@ class BoatController(controller.StaticController):
 # Non-linear model
 sys = Boat2D()
 
+from pyro.dynamic.boat import Boat2DwithCurrent
+
+sys = Boat2DwithCurrent()
+sys.current_velocity = np.array([-3.5, -0.5])  # No current
+
 # Cascade controller
 ctl = BoatController(sys)
 

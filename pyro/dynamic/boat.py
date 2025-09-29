@@ -510,29 +510,31 @@ class Boat2DwithCurrent(Boat2D):
 if __name__ == "__main__":
     """MAIN TEST"""
 
-    sys = Boat2D()
+    # sys = Boat2D()
 
-    sys.x0[0] = 0.0
-    sys.x0[1] = 0
-    sys.x0[2] = 0.0
+    # sys.x0[0] = 0.0
+    # sys.x0[1] = 0
+    # sys.x0[2] = 0.0
 
-    sys.x0[3] = 0.0
-    sys.x0[4] = 0.0
-    sys.x0[5] = 0.0
+    # sys.x0[3] = 0.0
+    # sys.x0[4] = 0.0
+    # sys.x0[5] = 0.0
 
-    sys.ubar[0] = 100000
-    sys.ubar[1] = 2000
+    # sys.ubar[0] = 100000
+    # sys.ubar[1] = 2000
 
-    sys.plot_alpha2Coefs()
+    # sys.plot_alpha2Coefs()
 
-    # sys.show_hydrodynamic_forces = True
+    # # sys.show_hydrodynamic_forces = True
 
-    sys.compute_trajectory(tf=100)
-    sys.plot_trajectory("xu")
-    sys.animate_simulation()
+    # sys.compute_trajectory(tf=100)
+    # sys.plot_trajectory("xu")
+    # sys.animate_simulation()
 
     sys = Boat2DwithCurrent()
-    sys.current_velocity = np.array([-2.0, -1.5])  # [vx, vy] in world frame
+    sys.damping_coef = np.array([0.0, 0.0, 0.0])
+    sys.Cm_max = -sys.Cm_max
+    sys.current_velocity = np.array([-5.0, -0.1])  # [vx, vy] in world frame
     # sys.current_velocity = np.array([0.0, 0.0])  # [vx, vy] in world frame
 
     # sys.mass = 1e100  # Set mass to a very large value to avoid acceleration
@@ -540,7 +542,7 @@ if __name__ == "__main__":
 
     sys.x0[0] = 0.0
     sys.x0[1] = 0
-    sys.x0[2] = 0.0
+    sys.x0[2] = 0.1
 
     sys.x0[3] = 0.0
     sys.x0[4] = 0.0
@@ -549,9 +551,11 @@ if __name__ == "__main__":
     # sys.ubar[0] = 100000
     # sys.ubar[1] = 2000
 
+    # sys.Cm_max = 0.01
+
     sys.plot_alpha2Coefs()
 
-    # sys.show_hydrodynamic_forces = True
+    sys.show_hydrodynamic_forces = True
 
     sys.compute_trajectory(tf=100)
     sys.plot_trajectory("xu")

@@ -230,7 +230,7 @@ sys = Boat2D()
 from pyro.dynamic.boat import Boat2DwithCurrent
 
 sys = Boat2DwithCurrent()
-sys.current_velocity = np.array([-3.5, -0.5])  # No current
+sys.current_velocity = np.array([-0.5, -0.5])  # No current
 
 # Cascade controller
 ctl = BoatController(sys)

@@ -15,7 +15,7 @@ from pyro.planning import dynamicprogramming
 
 ##############################################################################
 
-sys = pendulum.SinglePendulum()
+sys = pendulum.InvertedPendulum()
 
 sys.x_ub = np.array([+6, +6])
 sys.x_lb = np.array([-9, -6])
@@ -26,7 +26,7 @@ grid_sys = discretizer.GridDynamicSystem(sys, [301, 301], [21])
 # Cost Function
 qcf = costfunction.QuadraticCostFunction.from_sys(sys)
 
-qcf.xbar = np.array([-3.14, 0])  # target
+# qcf.xbar = np.array([-3.14, 0])  # target
 qcf.INF = 300
 
 qcf.R[0, 0] = 1.0
@@ -52,5 +52,5 @@ dp.plot_policy()
 ctl = dp.get_lookup_table_controller()
 
 # Simulation
-
-game = sys.convert_to_pygame( tf=10.0, dt=0.01, ctl=ctl, renderer="pygame" )
+sys.x0 = np.array([-3.14, 0.0])
+game = sys.convert_to_pygame(tf=10.0, dt=0.01, ctl=ctl, renderer="pygame")

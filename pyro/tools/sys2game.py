@@ -150,9 +150,10 @@ class InteractiveContinuousDynamicSystem:
             # Stop button
             self.stop = joy.get_button(3)
 
-            for j in self.sys.ubar.shape[0]:
+            for j in range(self.sys.ubar.shape[0]):
                 input = self.input_axis_mapping[j]
-                u[j] = input * (sys.u_ub[j] - self.sys.u_lb[j]) * self.input_scale
+                value = joy.get_axis(input)
+                u[j] = value * (self.sys.u_ub[j] - self.sys.u_lb[j]) * self.input_scale
 
         # Automatic modes
         if self.ctl is not None:

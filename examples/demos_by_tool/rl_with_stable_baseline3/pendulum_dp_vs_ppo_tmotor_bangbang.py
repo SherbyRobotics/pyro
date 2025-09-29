@@ -39,18 +39,18 @@ sys.cost_function.R[0, 0] = 0.0
 sys.cost_function.Q[0, 0] = 1.0
 sys.cost_function.Q[1, 1] = 0.0
 
-# DP solution
-from pyro.planning import discretizer
-from pyro.planning import dynamicprogramming
+# # DP solution
+# from pyro.planning import discretizer
+# from pyro.planning import dynamicprogramming
 
-grid_sys = discretizer.GridDynamicSystem(sys, [201, 201], [21])
+# grid_sys = discretizer.GridDynamicSystem(sys, [201, 201], [21])
 
-dp = dynamicprogramming.DynamicProgrammingWithLookUpTable(grid_sys, sys.cost_function)
+# dp = dynamicprogramming.DynamicProgrammingWithLookUpTable(grid_sys, sys.cost_function)
 
-dp.solve_bellman_equation(tol=0.01)
-dp.clean_infeasible_set()
-dp.plot_policy()
-dp.plot_cost2go(jmax=10)
+# dp.solve_bellman_equation(tol=0.01)
+# dp.clean_infeasible_set()
+# dp.plot_policy()
+# dp.plot_cost2go(jmax=10)
 
 # Learning
 env = sys.convert_to_gymnasium(dt=0.05, render_mode=None)

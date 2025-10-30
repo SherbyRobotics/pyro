@@ -1,0 +1,322 @@
+import numpy as np
+from scipy.interpolate import interp1d
+import matplotlib.pyplot as plt
+
+from pyro.analysis import simulation
+
+
+class NoiseSignal:
+    """
+    Internal class to generate, provide, and visualize a piecewise-constant
+    noise signal over a defined duration.
+    """
+
+    def __init__(self, covariance, noise_dt=0.01, t0=-1, tf=11, seed=12345):
+        """
+        Initializes and generates the noise signal.
+
+        Parameters
+        ----------
+        sim_duration : float
+            Total simulation duration.
+        noise_dt : float
+            Fixed time step for noise generation.
+        """
+
+        # Create the time instances for the noise
+        sim_duration = tf - t0
+        self.num_steps = int(sim_duration / noise_dt) + 1
+        self.t_samples = np.linspace(t0, tf, self.num_steps)
+
+        # Generate all noise samples in advance
+        mean = np.zeros(covariance.shape[0])
+        rng = np.random.default_rng(seed)
+        self.noise_samples = rng.multivariate_normal(
+            mean, covariance, size=self.num_steps
+        )
+
+        # Create a zero-order hold interpolation function
+        self._noise_function = interp1d(
+            self.t_samples,
+            self.noise_samples,
+            kind="cubic",
+            axis=0,
+            fill_value=0.0,
+            bounds_error=False,
+        )
+
+    def get_noise(self, t):
+        """Returns the pre-generated noise value at time t."""
+        return self._noise_function(t)
+
+    def plot(self):
+        """Visualizes the pre-generated noise signal."""
+        fig, ax = plt.subplots(figsize=(10, 4))
+
+        # Plot the original discrete samples as points
+        ax.plot(self.t_samples, self.noise_samples, "o", alpha=0.6, label=None)
+
+        # Create a finer time vector to draw a smooth line for the interpolation
+        t_fine = np.linspace(
+            self.t_samples[0] - 1, self.t_samples[-1] + 1, self.num_steps * 10
+        )
+
+        # Plot the interpolated signal (the spline or line)
+        lines = ax.plot(t_fine, self.get_noise(t_fine))
+        ax.set_xlabel("Time (s)")
+        ax.set_ylabel("Noise")
+        ax.grid(True)
+
+
+class StochasticSystemWrapper:  # (ContinuousDynamicSystem):
+    """
+    A "decorator" that wraps a deterministic pyro dynamic system
+    with process and measurement noise.
+    """
+
+    def __init__(self, sys, Q, R, random_seed=None):
+        """
+        Constructor for the stochastic wrapper.
+
+        Parameters
+        ----------
+        sys: ContinuousDynamicSystem
+            An instance of an existing pyro dynamic system.
+        Q : np.ndarray
+            Continuous-time process noise covariance matrix (affects dx/dt).
+        R : np.ndarray
+            Continuous-time measurement noise covariance matrix (affects y).
+        random_seed : int, optional
+            Seed for the random number generator for reproducibility.
+        """
+        self.sys = sys
+        self.Q = Q
+        self.R = R
+
+        # Expose the essential attributes of the original system
+        self.n, self.m, self.p = self.sys.n, self.sys.m, self.sys.p
+        self.state_label = self.sys.state_label
+        self.input_label = self.sys.input_label
+        self.output_label = self.sys.output_label
+
+        self.name = f"StochasticWrapper({self.sys.name})"
+
+        # Initialize the random number generator
+        self._process_noise = NoiseSignal(
+            Q, noise_dt=0.01, t0=-1, tf=11.0, seed=random_seed
+        )
+
+        self._measurement_noise = NoiseSignal(
+            R, noise_dt=0.01, t0=-1, tf=11.0, seed=random_seed
+        )
+
+    ##############################
+    def f(self, x, u, t):
+
+        w = self._process_noise.get_noise(t)
+
+        dx = self.sys.f(x, u, t) + w
+
+        return dx
+
+    ##############################
+    def h(self, x, u, t):
+
+        v = self._measurement_noise.get_noise(t)
+
+        y = self.sys.h(x, u, t) + v
+
+        return y
+
+    ##############################
+    def __getattr__(self, name):
+        """Delegates attribute calls not found in the wrapper to the original system."""
+        return getattr(self.sys, name)
+
+    #############################
+    def fsim(self, x, t=0):
+        """
+        Continuous time foward dynamics evaluation dx = f(x,t), inlcuding the
+        internal reference input signal computation
+
+        INPUTS
+        x  : state vector             n x 1
+        t  : time                     1 x 1
+
+        OUPUTS
+        dx : state derivative vector  n x 1
+
+        """
+
+        u = self.sys.t2u(t)
+        dx = self.f(x, u, t)
+
+        return dx
+
+    #############################
+    def x_next(self, x, u, t=0, dt=0.1, steps=1):
+        """
+        Discrete time foward dynamics evaluation
+        -------------------------------------
+        - using Euler integration
+
+        """
+
+        x_next = np.zeros(self.n)  # k+1 State vector
+
+        # Multiple integration steps
+        for i in range(steps):
+
+            x_next = self.f(x, u, t) * dt + x
+
+            # Multiple steps
+            x = x_next
+
+        return x_next
+
+    #############################
+    def compute_trajectory(self, tf=10, n=10001, solver="solve_ivt", **solver_args):
+        """
+        Simulation of time evolution of the system
+        ------------------------------------------------
+        tf : final time
+        n  : time steps
+        """
+
+        sim = simulation.Simulator(self, tf, n, solver)
+
+        # solve and save the result in the instance
+        self.traj = sim.compute(**solver_args)
+
+        return self.traj
+
+    #############################
+    def plot_trajectory(self, plot="x", **kwargs):
+        """
+        Plot time evolution of a simulation of this system
+        ------------------------------------------------
+        note: will call compute_trajectory if no simulation data is present
+
+        """
+
+        # Check if trajectory is already computed
+        if self.traj == None:
+            self.compute_trajectory()
+
+        plotter = self.get_plotter()
+
+        return plotter.plot(self.traj, plot, **kwargs)
+
+    ##############################
+    def animate_simulation(self, **kwargs):
+        """
+        Show Animation of the simulation
+        ----------------------------------
+        time_factor_video < 1 --> Slow motion video
+        is_3d = True for 3D animation
+        note: will call compute_trajectory if no simulation data is present
+
+        """
+
+        # Check is trajectory is already computed
+        if self.traj == None:
+            self.compute_trajectory()
+
+        ani = self.get_animator()
+
+        return ani.animate_simulation(self.traj, **kwargs)
+
+    ##############################
+    def generate_simulation_html_video(self, **kwargs):
+        """
+        Show Animation of the simulation
+        ----------------------------------
+        time_factor_video < 1 --> Slow motion video
+        is_3d = True for 3D animation
+        note: will call compute_trajectory if no simulation data is present
+
+        """
+
+        # Check is trajectory is already computed
+        if self.traj == None:
+            self.compute_trajectory()
+
+        animator = self.get_animator()
+        animator.animate_simulation(self.traj, show=False, **kwargs)
+        html_video = animator.ani.to_html5_video()
+
+        return html_video
+
+
+"""
+#################################################################
+##################          Main                         ########
+#################################################################
+"""
+
+
+if __name__ == "__main__":
+    """MAIN TEST"""
+
+    covariance = np.array([[0.001, 0.0], [0.0, 0.001]])
+
+    ns = NoiseSignal(covariance, noise_dt=0.01, t0=-1, tf=11.0, seed=42)
+
+    # ns.plot()
+
+    from pyro.dynamic.pendulum import SinglePendulum
+
+    class SinglePendulum_with_position_output(SinglePendulum):
+
+        def __init__(self):
+            super().__init__()
+
+            self.p = 1  # output size
+            # self.rbar = np.array([0]) # ref size
+
+        def h(self, x, u, t):
+
+            # New output function
+            y = SinglePendulum.h(self, x, u, t)
+
+            y_position = np.zeros(1)
+            y_position[0] = y[0]
+
+            return y_position
+
+    sys = SinglePendulum_with_position_output()
+    sys.x0[0] = 1.1
+    # traj1 = sys.compute_trajectory(10)
+    # sys.plot_trajectory("xu")
+    # sys.plot_trajectory("y")
+    # # sys.animate_simulation()
+
+    Q = np.array([[0.00, 0.0], [0.0, 0.1]])
+    R = np.array([[0.001]])
+    sys2 = StochasticSystemWrapper(sys, Q=Q, R=R, random_seed=42)
+
+    traj2 = sys2.compute_trajectory(10)
+    sys2.plot_trajectory("xu")
+    sys2.plot_trajectory("y")
+    # sys2.animate_simulation()
+
+    from pyro.control import linear
+
+    dof = 1
+
+    kp = 5  # 2,4
+    kd = 5  # 1
+    ki = 0.0
+
+    ctl = linear.PIDController(kp, ki, kd, tau=0.1)
+
+    # Set Point
+    q_target = np.array([0.0])
+    ctl.rbar = q_target
+
+    # New cl-dynamic
+    cl_sys = ctl + sys2
+
+    cl_sys.compute_trajectory(tf=10, n=20001, solver="euler")
+    cl_sys.plot_trajectory("xu")
+    cl_sys.animate_simulation()

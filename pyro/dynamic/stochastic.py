@@ -2,7 +2,6 @@ import numpy as np
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 
-from pyro.dynamic.system import ContinuousDynamicSystem
 from pyro.analysis import simulation
 
 

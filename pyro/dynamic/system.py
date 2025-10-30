@@ -624,6 +624,30 @@ class ContinuousDynamicSystem:
 
             raise ImportError("gym library is not installed")
 
+    #############################
+    def convert_to_pygame(self, tf=10.0, dt=0.01, ctl=None, renderer="pygame"):
+        """
+        Create a gym environment from the system
+
+        """
+
+        try:
+
+            import pygame
+            from pyro.tools.sys2game import InteractiveContinuousDynamicSystem
+
+            game = InteractiveContinuousDynamicSystem(
+                self, tf=tf, dt=dt, ctl=ctl, renderer=renderer
+            )
+
+            game.run(debug=True)
+
+            return game
+
+        except:
+
+            raise ImportError("pygame library is not installed")
+
 
 """
 #################################################################

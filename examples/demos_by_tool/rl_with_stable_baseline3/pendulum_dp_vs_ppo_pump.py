@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 from pyro.dynamic import pendulum
 from pyro.control import controller
 from stable_baselines3 import PPO
-from stable_baselines3.common.env_util import make_vec_env
 
 sys = pendulum.InvertedPendulum()
 

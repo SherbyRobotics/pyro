@@ -131,7 +131,14 @@ class GaussianMapWithObstacles(Map):
         """Initialize map parameters."""
 
         # Obstacles [x, y, radius]
-        self.obstacles = [[2, 2, 0.5], [3, 8, 0.2], [7, 2, 0.5], [1, 3, 1.5]]
+        self.obstacles = [
+            [2, 2, 0.5],
+            [3, 8, 0.2],
+            [7, 2, 0.5],
+            [1, 3, 1.5],
+            [6, 6, 1.0],
+            [8, 5, 0.7],
+        ]
 
         # Traversability map parameters
         # Gaussian mixture: [(x, y, amplitude, sigma_x, sigma_y), ...]

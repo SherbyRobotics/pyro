@@ -93,6 +93,7 @@ class RRT(Planner):
 
     ##############################
     def collision_free_path(self, x1, x2):
+
         path_points = self.sys.get_path_points(x1, x2)
         for x in path_points:
             if not self.sys.isavalidstate(x):
@@ -101,9 +102,19 @@ class RRT(Planner):
 
     ##############################
     def get_nearest_node(self, point):
+
         dists = [self.sys.distance(node.state, point) for node in self.nodes]
         min_index = np.argmin(dists)
         return self.nodes[min_index]
+
+    ##############################
+    def _add_node(self, state, parent):
+        """Helper to add node, can be overridden by subclasses"""
+        new_node = Node(state)
+        new_node.parent = parent
+        new_node.cost = parent.cost + self.sys.distance(parent.state, state)
+        self.nodes.append(new_node)
+        return new_node
 
     ##############################
     def compute_solution(self):
@@ -125,12 +136,7 @@ class RRT(Planner):
 
             # 4. Check & Add
             if self.collision_free_path(nearest_node.state, x_new_state):
-                new_node = Node(x_new_state)
-                new_node.parent = nearest_node
-                new_node.cost = nearest_node.cost + self.sys.distance(
-                    nearest_node.state, x_new_state
-                )
-                self.nodes.append(new_node)
+                self._add_node(x_new_state, nearest_node)
 
         self.solution_path = self.extract_path()
 
@@ -221,6 +227,79 @@ class RRT(Planner):
             plt.show()
 
 
+##############################################################################
+###############################################################################
+class RRTStar(RRT):
+    """
+    RRT* Planner (Inherits from RRT, adds rewiring)
+    """
+
+    ############################
+    def __init__(self, sys, cost_function=None):
+        super().__init__(sys, cost_function)
+
+        self.search_radius = 2.0  # Radius to look for neighbors
+
+    ##############################
+    def get_neighbors(self, new_state):
+
+        neighbors = []
+        for node in self.nodes:
+            if self.sys.distance(node.state, new_state) <= self.search_radius:
+                neighbors.append(node)
+        return neighbors
+
+    ##############################
+    def _add_node(self, state, nearest_node):
+        """
+        Override _add_node to include RRT* logic:
+        1. Choose best parent from neighbors
+        2. Add node
+        3. Rewire neighbors
+        """
+
+        # Find neighbors within search radius
+        neighbors = self.get_neighbors(state)
+
+        # Default parent is nearest_node
+        min_cost = nearest_node.cost + self.sys.distance(nearest_node.state, state)
+        best_parent = nearest_node
+
+        # 1. Choose Best Parent (optimization step)
+        for neighbor in neighbors:
+            # Calculate potential cost
+            cost_via_neighbor = neighbor.cost + self.sys.distance(neighbor.state, state)
+
+            # Check if this neighbor offers a cheaper path
+            if cost_via_neighbor < min_cost:
+                if self.collision_free_path(neighbor.state, state):
+                    min_cost = cost_via_neighbor
+                    best_parent = neighbor
+
+        # Create new node with best parent found
+        new_node = Node(state)
+        new_node.parent = best_parent
+        new_node.cost = min_cost
+        self.nodes.append(new_node)
+
+        # 2. Rewire Neighbors (rewiring step)
+        for neighbor in neighbors:
+            # Calculate cost if we route through new_node
+            cost_via_new_node = new_node.cost + self.sys.distance(
+                new_node.state, neighbor.state
+            )
+
+            # If cheaper, rewire
+            if cost_via_new_node < neighbor.cost:
+                if self.collision_free_path(new_node.state, neighbor.state):
+                    neighbor.parent = new_node
+                    neighbor.cost = cost_via_new_node
+                    # Note: We are not recursively updating costs of children here for simplicity,
+                    # but typically RRT* would propagate this cost improvement down the branch.
+
+        return new_node
+
+
 if __name__ == "__main__":
 
     from pyro.planning.ugv_map import GaussianMapWithObstacles
@@ -233,6 +312,15 @@ if __name__ == "__main__":
     # sys.add_path_on_ax(np.array([0, 0]), np.array([5, 5]), ax)
 
     planner = RRT(sys)
+    # planner = RRTStar(sys)
+    planner.set_start_goal([0, 0], [8, 8])
+    planner.max_iter = 2000
+    planner.step_size = 0.1
+    path = planner.compute_solution()
+    # planner.plot_tree()
+    planner.show_solution(show_tree=True)
+
+    planner = RRTStar(sys)
     planner.set_start_goal([0, 0], [8, 8])
     planner.max_iter = 2000
     planner.step_size = 0.1

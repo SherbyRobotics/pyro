@@ -3,8 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 ###############################################################################
-from pyro.analysis import graphical
-from pyro.dynamic import mechanical
 from pyro.dynamic import rigidbody
 from pyro.kinematic import geometry
 from pyro.kinematic import drawing
@@ -18,16 +16,43 @@ from pyro.kinematic import drawing
 class TireModel:
     """Base Strategy for Tire-Road Interaction"""
 
-    def get_forces(self, alpha, kappa, Fz):
+    def __init__(self):
+        self.v_min_epsilon = 0.1
+
+    def vel2slip(self, vx, vy, w, R):
+        """Compute longitudinal and lateral slip"""
+
+        # Adjusted longitudinal velocity to avoid division by zero
+        vx_adj = np.abs(vx) + self.v_min_epsilon
+
+        # Lateral slip angle (alpha)
+        alpha = -np.arctan(vy / vx_adj)
+
+        # Longitudinal slip ratio (kappa)
+        kappa = (w * R - vx) / vx_adj
+
+        return alpha, kappa
+
+    def slip2forces(self, alpha, kappa, Fz):
+        """Convert slip values to forces using the tire model"""
         raise NotImplementedError
+
+    def vel2forces(self, vx, vy, w, R, Fz):
+        """Compute forces directly from velocities"""
+        alpha, kappa = self.vel2slip(vx, vy, w, R)
+        return self.slip2forces(alpha, kappa, Fz)
 
 
 class LinearTire(TireModel):
+
     def __init__(self, Ca=60000, Ck=100000, mu=1.0):
+
+        TireModel.__init__(self)
+
         self.Ca, self.Ck = Ca, Ck
         self.mu = mu
 
-    def get_forces(self, alpha, kappa, Fz):
+    def slip2forces(self, alpha, kappa, Fz):
         # Forces brutes
         Fx = self.Ck * kappa
         Fy = self.Ca * alpha
@@ -44,15 +69,26 @@ class LinearTire(TireModel):
         return Fx, Fy
 
 
-class Pacejka94Tire(TireModel):
-    """Pacejka 'Magic Formula' (B, C, D, E)"""
+class Pacejka(TireModel):
+    """Magic Formula'"""
 
     def __init__(self, B=10.0, C=1.3, D=1.0, E=0.97):
+        TireModel.__init__(self)
         self.B, self.C, self.D, self.E = B, C, D, E
 
-    def get_forces(self, alpha, kappa, Fz):
-        # TODO: Implement Pacejka formula
-        return 0.0, 0.0
+    def slip2forces(self, alpha, kappa, Fz):
+        # Fonction magique
+        def mf(x, fz):
+            D_scaled = self.D * fz
+            return D_scaled * np.sin(
+                self.C
+                * np.arctan(self.B * x - self.E * (self.B * x - np.arctan(self.B * x)))
+            )
+
+        Fx = mf(kappa, Fz)
+        Fy = mf(alpha, Fz)
+
+        return Fx, Fy
 
 
 ##############################################################################
@@ -84,10 +120,11 @@ class DynamicBicycle(rigidbody.RigidBody2D):
         self.x_lb = np.array([-100, -100, -10, -50, -10, -5])
 
         # Paramètres Géométriques
-        self.a = 1.2
-        self.b = 1.6
+        self.a = 1.0
+        self.b = 1.0
         self.L = self.a + self.b
-        self.R_wheel = 0.3  # Rayon de la roue [m]
+        self.r_f = 0.3  # Rayon de la roue avant [m]
+        self.r_r = 0.3  # Rayon de la roue arrière [m]
 
         # Masse / Inertie
         self.mass = 1500.0
@@ -99,11 +136,51 @@ class DynamicBicycle(rigidbody.RigidBody2D):
         self.CdA = 0.3 * 2.2
 
         # Modèles de Pneus
-        self.tire_model = LinearTire()
+        self.tire_model_f = LinearTire()
+        self.tire_model_r = LinearTire()
+        # self.tire_model_f = Pacejka(B=12.0, C=1.3, D=1.0, E=0.97)
+        # self.tire_model_r = Pacejka(B=12.0, C=1.3, D=1.0, E=0.97)
 
         # Graphique
         self.wheel_len = 0.6
         self.wheel_width = 0.2
+
+    ###########################################################################
+    def compute_wheel_velocities(self, v_body, u_inputs):
+        """
+        Calcul les vitesses (translation du moyeux et rotation) des roues
+        v_body : [u, v, r]
+        u : [w_rear, delta]
+        """
+
+        u = v_body[0]  # Vitesse longitudinale [m/s] (surge)
+        v = v_body[1]  # Vitesse latérale [m/s] (sway)
+        r = v_body[2]  # Vitesse de lacet [rad/s] (yaw rate)
+
+        delta = u_inputs[1]  # Angle de braquage [rad]
+
+        # Vitesses linéaires aux moyeux, repère du véhicule
+        # Avant
+        vx_f_b = u
+        vy_f_b = v + self.a * r
+        # Arrière
+        vx_r_b = u
+        vy_r_b = v - self.b * r
+
+        # Vitesses linéaires, repère des roues
+        # Avant (braquée)
+        c_d, s_d = np.cos(delta), np.sin(delta)
+        vx_f = c_d * vx_f_b + s_d * vy_f_b
+        vy_f = -s_d * vx_f_b + c_d * vy_f_b
+        # Arrière (non braquée)
+        vx_r = vx_r_b
+        vy_r = vy_r_b
+
+        # Calcul des vitesses de rotation des roues
+        w_r = u_inputs[0]  # Vitesse de rotation commandée [rad/s]
+        w_f = vx_f / self.r_f  # Roue avant libre, no slip
+
+        return vx_f, vy_f, w_f, vx_r, vy_r, w_r
 
     ###########################################################################
     def compute_tire_physics(self, v_body, u_inputs):
@@ -112,37 +189,21 @@ class DynamicBicycle(rigidbody.RigidBody2D):
         v_body : [u, v, r]
         u : [w_rear, delta]
         """
-        u = v_body[0]
-        v = v_body[1]
-        r = v_body[2]
 
-        w_rear = u_inputs[0]  # Vitesse de rotation commandée [rad/s]
-        delta = u_inputs[1]  # Angle de braquage [rad]
+        # Vitesses des roues
+        vx_f, vy_f, w_f, vx_r, vy_r, w_r = self.compute_wheel_velocities(
+            v_body, u_inputs
+        )
 
-        # 1. Vitesses linéaires aux moyeux
-        vx_f = u
-        vy_f = v + self.a * r
-
-        vx_r = u
-        vy_r = v - self.b * r
-
-        # 2. Glissement Latéral (Alpha)
-        alpha_f = delta - np.arctan2(vy_f, vx_f)
-        alpha_r = 0.0 - np.arctan2(vy_r, vx_r)
-
-        # 3. Glissement Longitudinal (Kappa)
-        kappa_f = 0
-        kappa_r = (w_rear * self.R_wheel - vx_r) / vx_r
-
-        # 4. Charges Verticales (Statique pas de transfert de charge)
+        # Charges Verticales (Statique pas de transfert de charge)
         Fz_f = self.mass * self.gravity * (self.b / self.L)
         Fz_r = self.mass * self.gravity * (self.a / self.L)
 
-        # 5. Calcul des Forces Pneus (Pacejka gère Fx et Fy)
-        Fx_f_tire, Fy_f_tire = self.tire_model.get_forces(alpha_f, kappa_f, Fz_f)
-        Fx_r_tire, Fy_r_tire = self.tire_model.get_forces(alpha_r, kappa_r, Fz_r)
+        # Forces Pneus (Repère Roue)
+        Fx_f, Fy_f = self.tire_model_f.vel2forces(vx_f, vy_f, w_f, self.r_f, Fz_f)
+        Fx_r, Fy_r = self.tire_model_r.vel2forces(vx_r, vy_r, w_r, self.r_r, Fz_r)
 
-        return Fx_f_tire, Fy_f_tire, Fx_r_tire, Fy_r_tire
+        return Fx_f, Fy_f, Fx_r, Fy_r
 
     ###########################################################################
     def d(self, q, v, u):
@@ -151,18 +212,23 @@ class DynamicBicycle(rigidbody.RigidBody2D):
         Fx_f, Fy_f, Fx_r, Fy_r = self.compute_tire_physics(v, u)
         delta = u[1]
 
-        # Projection dans le repère châssis
+        # Projection des forces des roues dans le repère châssis
         c_d, s_d = np.cos(delta), np.sin(delta)
+        Fx_f_b = Fx_f * c_d - Fy_f * s_d
+        Fy_f_b = Fx_f * s_d + Fy_f * c_d
+
+        Fx_r_b = Fx_r
+        Fy_r_b = Fy_r
 
         # Forces Totales sur le châssis
-        # Axe x (Force propulsion arrière + composante freinage braquage avant)
-        Sum_Fx = (Fx_f * c_d - Fy_f * s_d) + Fx_r
+        # Axe x
+        Sum_Fx = Fx_f_b + Fx_r_b
 
         # Axe y
-        Sum_Fy = (Fx_f * s_d + Fy_f * c_d) + Fy_r
+        Sum_Fy = Fy_f_b + Fy_r_b
 
         # Moment z
-        Sum_Mz = self.a * (Fx_f * s_d + Fy_f * c_d) - self.b * Fy_r
+        Sum_Mz = self.a * Fy_f_b - self.b * Fy_r
 
         # Ajout Traînée Aérodynamique
         F_aero = 0.5 * self.rho * self.CdA * v[0] * abs(v[0])
@@ -174,10 +240,12 @@ class DynamicBicycle(rigidbody.RigidBody2D):
 
     #############################
     def u2e(self, u):
+        # No force inputs in this model
         return np.zeros(self.dof)
 
     ###########################################################################
     def B(self, q, u):
+        # No force inputs in this model
         return np.zeros((self.dof, self.dof))
 
     ###########################################################################
@@ -322,27 +390,44 @@ if __name__ == "__main__":
 
     # État initial : [x, y, theta, vx, vy, r]
     # On commence avec une vitesse latérale nulle, mais une vitesse longit de 10 m/s
-    sys.x0 = np.array([0, 0, 0.0, 2, 0, 0])
+    sys.x0 = np.array([0, 0, 0.0, 0.0, 0, 0])
 
     def control_law(t):
-        w = 20.0
-        delta = 0.0
+
+        delta = +0.2
+        w = -5.0
+
+        if t > 2.0:
+            w = 40.0
+            delta = 0.0
 
         if t > 4.0:
-            delta = 0.02 * (t - 4.0)  # Braquage à gauche
+            delta = 0.2 * (t - 4.0)  # Braquage à gauche
+
+        if t > 8.0:
+            delta = -0.2
+
+        if t > 9.0:
+            w = 0.0
 
         if t > 10.0:
-            w = 20 + 20 * (t - 10.0)
+            delta = -0.4
+            w = -5.0
 
         if t > 12.0:
-            delta = delta - 0.05 * (t - 12.0)
+            delta = 0.0
+            w = 50.0
+
+        if t > 15.0:
+            delta = 0.2 * (t - 15.0)  # Braquage à gauche
+            w = 50.0 + 5.0 * (t - 15.0)
 
         return np.array([w, delta])
 
     sys.t2u = control_law
 
     # Simulation
-    sys.compute_trajectory(20.0)
+    sys.compute_trajectory(20.0, solver="euler")
 
     # Affichage Trajectoire
     sys.plot_trajectory("x")

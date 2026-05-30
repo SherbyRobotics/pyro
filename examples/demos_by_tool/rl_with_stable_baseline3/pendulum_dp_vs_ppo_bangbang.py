@@ -59,15 +59,15 @@ dp.plot_cost2go_3D(jmax=5000)
 # Learning
 gym_env = sys.convert_to_gymnasium(dt=dt, render_mode=None)
 
-gym_env.clipping_states = True # To reproduce the behavior of gym pendulum
+gym_env.clipping_states = True  # To reproduce the behavior of gym pendulum
 
 gym_env.reset_mode = "uniform"
-gym_env.x0_lb = np.array([-np.pi , -1.0])
-gym_env.x0_ub = np.array([+np.pi , +1.0])
+gym_env.x0_lb = np.array([-np.pi, -1.0])
+gym_env.x0_ub = np.array([+np.pi, +1.0])
 
 model = PPO("MlpPolicy", gym_env, verbose=1)
 
-#model.load('pendulum_dp_vs_ppo_bangbang')
+# model.load('pendulum_dp_vs_ppo_bangbang')
 
 from pyro.control.reinforcementlearning import stable_baseline3_controller
 
@@ -78,7 +78,7 @@ ppo_ctl.plot_control_law(sys=sys, n=100)
 plt.show()
 plt.pause(0.001)
 
-n_time_steps = 2.5E2
+n_time_steps = 2.5e6
 batches = 3
 gym_env.render_mode = None
 for batch in range(batches):
@@ -88,7 +88,7 @@ for batch in range(batches):
     plt.pause(0.001)
 
 # Save the model
-model.save('pendulum_dp_vs_ppo_bangbang')
+model.save("pendulum_dp_vs_ppo_bangbang")
 
 # Animating rl closed-loop
 cl_sys = ppo_ctl + sys

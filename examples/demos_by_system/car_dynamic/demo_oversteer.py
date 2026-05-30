@@ -7,20 +7,19 @@ from pyro.dynamic.vehicle_dynamic import DynamicBicycle
 from pyro.dynamic.vehicle_dynamic import LinearTire
 from pyro.dynamic.vehicle_dynamic import Pacejka
 
-
 sys = DynamicBicycle()
 
 sys.tire_model_f = LinearTire(Ca=80000.0)
-sys.a = 0.5
+sys.a = 1.0
 
 sys.tire_model_r = LinearTire(Ca=2000.0)
-sys.b = 3.5
+sys.b = 1.0
 
 sys.x0 = np.array([0, 0, 0, 0.0, 0, 0])
 
 
 def control(t):
-    w_rear = 20.0
+    w_rear = 2.5 * t
     delta = 0.4
 
     return np.array([w_rear, delta])
@@ -29,6 +28,6 @@ def control(t):
 sys.t2u = control
 
 
-sys.compute_trajectory()
+sys.compute_trajectory(tf=0.2)
 sys.plot_trajectory("x")
 sys.animate_simulation(time_factor_video=1.0)

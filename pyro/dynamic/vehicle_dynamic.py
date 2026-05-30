@@ -137,7 +137,7 @@ class DynamicBicycle(rigidbody.RigidBody2D):
 
         # Modèles de Pneus
         self.tire_model_f = LinearTire()
-        self.tire_model_r = LinearTire()
+        self.tire_model_r = LinearTire()  # LinearTire(Ca=6000)
         # self.tire_model_f = Pacejka(B=12.0, C=1.3, D=1.0, E=0.97)
         # self.tire_model_r = Pacejka(B=12.0, C=1.3, D=1.0, E=0.97)
 
@@ -394,40 +394,40 @@ if __name__ == "__main__":
 
     def control_law(t):
 
-        delta = +0.2
-        w = -5.0
+        delta = 0.0  # +0.2 * np.sin(10.0 * t)
+        w = -10.0 + 10 * t
 
-        if t > 2.0:
-            w = 40.0
-            delta = 0.0
+        # if t > 2.0:
+        #     w = 40.0
+        #     delta = 0.0
 
-        if t > 4.0:
-            delta = 0.2 * (t - 4.0)  # Braquage à gauche
+        # if t > 4.0:
+        #     delta = 0.2 * (t - 4.0)  # Braquage à gauche
 
-        if t > 8.0:
-            delta = -0.2
+        # if t > 8.0:
+        #     delta = -0.2
 
-        if t > 9.0:
-            w = 0.0
+        # if t > 9.0:
+        #     w = 0.0
 
-        if t > 10.0:
-            delta = -0.4
-            w = -5.0
+        # if t > 10.0:
+        #     delta = -0.4
+        #     w = -5.0
 
-        if t > 12.0:
-            delta = 0.0
-            w = 50.0
+        # if t > 12.0:
+        #     delta = 0.0
+        #     w = 50.0
 
-        if t > 15.0:
-            delta = 0.2 * (t - 15.0)  # Braquage à gauche
-            w = 50.0 + 5.0 * (t - 15.0)
+        # if t > 15.0:
+        #     delta = 0.2 * (t - 15.0)  # Braquage à gauche
+        #     w = 50.0 + 5.0 * (t - 15.0)
 
         return np.array([w, delta])
 
     sys.t2u = control_law
 
     # Simulation
-    sys.compute_trajectory(20.0, solver="euler")
+    sys.compute_trajectory(20.0)
 
     # Affichage Trajectoire
     sys.plot_trajectory("x")

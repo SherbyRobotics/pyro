@@ -87,11 +87,12 @@ class LookUpTableController( controller.StaticController ):
     def lookup_table_selection( self , x ):
         """  select the optimal u given actual cost map """
         
+        x = np.asarray( x ).ravel()
         u = np.zeros( self.m )
         
         for k in range(self.m):
             
-            u[k] = self.u_interpol[k]( x )
+            u[k] = self.u_interpol[k]( x.reshape(1, -1) )[0]
             
         return u
     
